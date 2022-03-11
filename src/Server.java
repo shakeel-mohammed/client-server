@@ -14,11 +14,9 @@ public class Server {
     public void start(int port) {
         try {
             System.out.println("Starting sever");
-
             serverSocket = new ServerSocket(port);
-
+            
             while (!serverSocket.isClosed()) {
-
                 clientSocket = serverSocket.accept();
                 System.out.println("Client acccepted...");
     
@@ -28,13 +26,18 @@ public class Server {
                 String inputLine;
                 while((inputLine = in.readLine()) != null) {
                     System.out.println("new message from client: " + inputLine);
-                    if (inputLine.equals(".")) {
-                        System.out.println("saying bye...");
-                        out.println("good bye");
+                    if (inputLine.equals("HELO")) {
+                        System.out.println("received HELO... replying with G'day");
+                        out.println("G'DAY");
+                    } else if (inputLine.equals("BYE")) {
+                        System.out.println("received BYE... replying with BYE");
+                        out.println("BYE");
                         clientSocket.close();
                         break;
+                    } else {
+                        System.out.println("unrecognised message... echoing back");
+                        out.println(inputLine);
                     }
-                    out.println(inputLine); // this just echos back the same message. no logic
                 }
             }
         } catch (IOException e) {

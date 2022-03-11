@@ -33,9 +33,11 @@ public class Client {
 
     public void stopConnection() {
         try {
+            System.out.println("Closing connection...");
             in.close();
             out.close();
             clientSocket.close();
+            System.out.println("Connection closed");
         } catch (IOException e) {
             System.out.println("Exception: " + e);
         }
@@ -47,7 +49,9 @@ public class Client {
         String response = client.sendMessage("HELO");
         System.out.println("Server responded! Response: " + response);
 
-        String response1 = client.sendMessage(".");
+        String response1 = client.sendMessage("BYE");
         System.out.println("Server responded again! Response: " + response1);
+
+        client.stopConnection();
     }
 }
