@@ -1,8 +1,6 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.net.Socket;
 
 /**
@@ -35,17 +33,15 @@ import java.net.Socket;
 
 public class Client {
     private Socket clientSocket;
-    private PrintWriter out;
-    private BufferedReader in;
-    private InputStream is;
+    private DataInputStream in;
+    private DataOutputStream out;
 
     public void createConnection(String ip, int port) {
         try {
             System.out.println("Connecting to server...");
             clientSocket = new Socket(ip, port);
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF-8")); // to be removed
-            is = clientSocket.getInputStream();
+            in = new DataInputStream(clientSocket.getInputStream());
+            out = new DataOutputStream(clientSocket.getOutputStream());
         } catch (IOException e) {
             System.out.println("Exception: " + e);
         }
@@ -53,18 +49,14 @@ public class Client {
 
     public boolean initiateHandshake () {
         try {
-            out.print("HELO");
+            out.write(("HELO\n").getBytes());
             out.flush();
 
             byte[] buffer = new byte[1024];
-            String resp = "";
-            int read;
-            while((read = is.read(buffer)) != -1) {
-                resp = new String(buffer, 0, read);
-                break;
-            };
+            in.read(buffer);
+            String resp = new String(buffer);
 
-            if (resp.equals("OK")) {
+            if (resp.trim().equals("OK")) {
                 System.out.println("Server responded to handshake correctly");
                 return true;
             } else {
@@ -82,18 +74,14 @@ public class Client {
     public boolean authenticate(String username) {
         try {
             String authString = "AUTH " + username;
-            out.print(authString);
+            out.write((authString + "\n").getBytes());
             out.flush();
 
             byte[] buffer = new byte[1024];
-            String resp = "";
-            int read;
-            while((read = is.read(buffer)) != -1) {
-                resp = new String(buffer, 0, read);
-                break;
-            };
+            in.read(buffer);
+            String resp = new String(buffer);
 
-            if (!(resp.equals("OK"))) {
+            if (!(resp.trim().equals("OK"))) {
                 throw new Exception("Unable to authenticate");
             }
             return true;
@@ -136,9 +124,16 @@ public class Client {
     public void closeConnectionGracefully () {
         try {
             System.out.println("Closing connection...");
-            out.print("QUIT");
-            String resp = in.readLine();
-            if (resp.equals("QUIT")) {
+            out.write(("QUIT\n").getBytes());
+            out.flush();
+
+            byte[] buffer = new byte[1024];
+            in.read(buffer);
+            String resp = new String(buffer);
+
+            System.out.println("response: " + resp);
+
+            if (resp.trim().equals("QUIT")) {
                 System.out.println("Closing connection gracefully");
                 terminateConnection();
             } else {;
@@ -154,13 +149,13 @@ public class Client {
         public String sendReadyCommand() {
         try {
             System.out.println("Getting event...");
-            out.print("REDY");
+            out.write("REDY\n".getBytes());
             out.flush();
 
             byte[] buffer = new byte[1024];
             String resp = "";
             int read;
-            while((read = is.read(buffer)) != -1) {
+            while((read = in.read(buffer)) != -1) {
                 resp = new String(buffer, 0, read);
                 break;
             };
@@ -171,16 +166,16 @@ public class Client {
         }
     }
 
-    public String sendMessage(String msg) {
-        try {
-            out.print(msg);
-            String resp = in.readLine();
-            return resp;
-        } catch (IOException e) {
-            System.out.println("Exception: " + e);
-            return "";
-        }
-    }
+    // public String sendMessage(String msg) {
+    //     try {
+    //         out.print(msg);
+    //         String resp = in.readLine();
+    //         return resp;
+    //     } catch (IOException e) {
+    //         System.out.println("Exception: " + e);
+    //         return "";
+    //     }
+    // }
 
     public static void main(String[] args) throws Exception {
         Client client = new Client();
@@ -190,17 +185,17 @@ public class Client {
         System.out.println("Connection established? " + isConnectionEstablished);
 
         if (isConnectionEstablished) {
-            String event;
-            while (!((event = client.sendReadyCommand()) == "NONE")) {
-                if (event.equals("ERR")) {
-                    System.out.println("encountered an error.");
-                    break;
-                } else {
-                    System.out.println("incoming event: " + event);
-                }
-            }
+            // String event;
+            // while (!((event = client.sendReadyCommand()) == "NONE")) {
+            //     if (event.equals("ERR")) {
+            //         System.out.println("encountered an error.");
+            //         break;
+            //     } else {
+            //         System.out.println("incoming event: " + event);
+            //     }
+            // }
     
-            System.out.println("Server replied with NONE. No more jobs to schedule.");
+            System.out.println("Server connected!");
         }
 
         client.closeConnectionGracefully();
