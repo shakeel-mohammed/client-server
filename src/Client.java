@@ -188,7 +188,7 @@ public class Client {
 
         try {
             String event;
-            while (!((event = sendOKCommand()).trim() == ".")) {
+            while ((event = sendOKCommand()).trim() != ".") {
                 Thread.sleep(1000);
                 if (event.equals("ERR")) {
                     System.out.println("encountered an error.");
