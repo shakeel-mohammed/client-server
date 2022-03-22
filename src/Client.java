@@ -52,9 +52,7 @@ public class Client {
             out.write(("HELO\n").getBytes());
             out.flush();
 
-            byte[] buffer = new byte[1024];
-            in.read(buffer);
-            String resp = new String(buffer);
+            String resp = in.readLine();
 
             if (resp.trim().equals("OK")) {
                 System.out.println("Server responded to handshake correctly");
@@ -77,9 +75,7 @@ public class Client {
             out.write((authString + "\n").getBytes());
             out.flush();
 
-            byte[] buffer = new byte[1024];
-            in.read(buffer);
-            String resp = new String(buffer);
+            String resp = in.readLine();
 
             if (!(resp.trim().equals("OK"))) {
                 throw new Exception("Unable to authenticate");
@@ -127,11 +123,7 @@ public class Client {
             out.write(("QUIT\n").getBytes());
             out.flush();
 
-            byte[] buffer = new byte[1024];
-            in.read(buffer);
-            String resp = new String(buffer);
-
-            System.out.println("response: " + resp);
+            String resp = in.readLine();
 
             if (resp.trim().equals("QUIT")) {
                 System.out.println("Closing connection gracefully");
@@ -146,19 +138,13 @@ public class Client {
         }
     }
 
-        public String sendReadyCommand() {
+    public String sendReadyCommand() {
         try {
             System.out.println("Getting event...");
             out.write("REDY\n".getBytes());
             out.flush();
 
-            byte[] buffer = new byte[1024];
-            String resp = "";
-            int read;
-            while((read = in.read(buffer)) != -1) {
-                resp = new String(buffer, 0, read);
-                break;
-            };
+            String resp = in.readLine();
             return resp;
         } catch (IOException e) {
             System.out.println("Exception: " + e);
@@ -166,16 +152,55 @@ public class Client {
         }
     }
 
-    // public String sendMessage(String msg) {
-    //     try {
-    //         out.print(msg);
-    //         String resp = in.readLine();
-    //         return resp;
-    //     } catch (IOException e) {
-    //         System.out.println("Exception: " + e);
-    //         return "";
-    //     }
-    // }
+    public String sendOKCommand() {
+        try {
+            out.write("OK\n".getBytes());
+            out.flush();
+
+            String resp = in.readLine();
+            return resp;
+        } catch (IOException e) {
+            System.out.println("Exception: " + e);
+            return "";
+        }
+    }
+
+    public String sendMessage(String msg) {
+        try {
+            out.write((msg + "\n").getBytes());
+            out.flush();
+            String resp = in.readLine();
+            return resp;
+        } catch (IOException e) {
+            System.out.println("Exception: " + e);
+            return "";
+        }
+    }
+
+    public void getServerStateInformation() {
+        String responseToGets = sendMessage("GETS All");
+        System.out.println("Indication Reponse to GETS: " + responseToGets);
+
+        // each available server is sent as a new line, with a newline character
+        // eg. "juju 1 inactive -1 2 4000 16000 0 0\n"
+        // we don't need to keep sending OK, we just need to keep reading from the stream.
+        // once we receive a ".", we then send the OK response.
+
+        try {
+            String event;
+            while (!((event = sendOKCommand()).trim() == ".")) {
+                Thread.sleep(1000);
+                if (event.equals("ERR")) {
+                    System.out.println("encountered an error.");
+                    break;
+                } else {
+                    System.out.println("incoming event: " + event);
+                }
+            }
+        } catch (Exception exc) {
+            System.out.println("exception: " + exc);
+        }
+    }
 
     public static void main(String[] args) throws Exception {
         Client client = new Client();
@@ -185,6 +210,13 @@ public class Client {
         System.out.println("Connection established? " + isConnectionEstablished);
 
         if (isConnectionEstablished) {
+            System.out.println("Server connected!");
+
+            String responseToREDY = client.sendMessage("REDY");
+            System.out.println("Response to REDY: " + responseToREDY);
+
+            client.getServerStateInformation();
+
             // String event;
             // while (!((event = client.sendReadyCommand()) == "NONE")) {
             //     if (event.equals("ERR")) {
@@ -194,8 +226,6 @@ public class Client {
             //         System.out.println("incoming event: " + event);
             //     }
             // }
-    
-            System.out.println("Server connected!");
         }
 
         client.closeConnectionGracefully();
