@@ -187,16 +187,30 @@ public class Client {
         // once we receive a ".", we then send the OK response.
 
         try {
-            String event;
-            while ((event = sendOKCommand()).trim() != ".") {
-                Thread.sleep(1000);
-                if (event.equals("ERR")) {
-                    System.out.println("encountered an error.");
-                    break;
-                } else {
-                    System.out.println("incoming event: " + event);
-                }
-            }
+            out.write("OK\n".getBytes());
+            out.flush();
+
+            byte[] buffer = new byte[1024];
+            String resp = "";
+            int read;
+            while((read = in.read(buffer)) != -1) {
+                resp = new String(buffer, 0, read);
+                System.out.println("ended");
+                break;
+            };
+            System.out.println("all data: " + resp);
+            // String event;
+            // while ((event = sendOKCommand()).trim() != ".") {
+            //     Thread.sleep(1000);
+            //     if (event.equals("ERR")) {
+            //         System.out.println("encountered an error.");
+            //         break;
+            //     } else {
+            //         System.out.println("incoming event: " + event);
+            //     }
+            // }
+            String responseToOK = sendOKCommand();
+            System.out.println("responseToOK: " + responseToOK);
         } catch (Exception exc) {
             System.out.println("exception: " + exc);
         }
