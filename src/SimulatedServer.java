@@ -1,3 +1,6 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class SimulatedServer {
     private String serverType;
@@ -10,7 +13,13 @@ public class SimulatedServer {
     private int numWaitingJobs;
     private int numRunningJobs;
 
-    SimulatedServer(String strigifiedServerInformation) {
+    private DataInputStream in;
+    private DataOutputStream out;
+
+    SimulatedServer(String strigifiedServerInformation, DataInputStream in, DataOutputStream out) {
+        this.in = in;
+        this.out = out;
+
         // break the string by the space between each attribute
         String[] serverInformation = strigifiedServerInformation.split(" ");
         
@@ -34,7 +43,26 @@ public class SimulatedServer {
         return this.state == "booting";
     }
 
+    public int getNumberOfCores() {
+        return this.core;
+    }
+
+    public void scheduleJob(int jobID) {
+        try {
+            String command = "SCHD " + jobID + " " + this.serverType + " " + this.serverID + "\n";
+            out.write(command.getBytes());
+            out.flush();
+            String resp = in.readLine();
+            if (!resp.trim().equals("OK")) {
+                throw new Error("Unexpected job scheduling response from ds-sim server: " + resp);
+            }
+        } catch (IOException e) {
+            System.out.println("IOException: " + e);
+        }
+    }
+
     public void display() {
+        System.out.println("================");
         System.out.println("Server Type: " + serverType);
         System.out.println("Server ID: " + serverID);
         System.out.println("Server State: " + state);
@@ -44,5 +72,6 @@ public class SimulatedServer {
         System.out.println("Server Disk: " + disk);
         System.out.println("Number of waiting jobs: " + numWaitingJobs);
         System.out.println("Number of running jobs: " + numRunningJobs);
+        System.out.println("================");
     }
 }

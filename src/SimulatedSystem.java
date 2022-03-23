@@ -1,17 +1,22 @@
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
 public class SimulatedSystem {
     private SimulatedServer[] serverStore;
 
-    SimulatedSystem(int numServers, String strigifiedServers) {
+    SimulatedSystem(int numServers, String strigifiedServers, DataInputStream in, DataOutputStream out) {
         this.serverStore = new SimulatedServer[numServers];
         String[] serversInformation = strigifiedServers.split("\n");
 
-        // we will need a normal for-loop here because we need an iterator to store each server in the correct index of the array
+        for (int i = 0; i < this.serverStore.length; i++) {
+            SimulatedServer server = new SimulatedServer(serversInformation[i], in, out);
+            this.serverStore[i] = server;
+        }
+    }
 
-        for (String simulatedServer: serversInformation) {
-            System.out.println(simulatedServer);
-            SimulatedServer server = new SimulatedServer(simulatedServer);
-            server.display();
+    public void printServerStore() {
+        for (SimulatedServer simulatedServer: this.serverStore) {
+            simulatedServer.display();
         }
     }
 
@@ -20,6 +25,12 @@ public class SimulatedSystem {
     }
 
     public SimulatedServer getLargestServer() {
-        return serverStore[0]; // should find the largest server in the array and return that rather than 1st in array
+        SimulatedServer largest = this.serverStore[0];
+        for (SimulatedServer simulatedServer: this.serverStore) {
+            if (simulatedServer.getNumberOfCores() > largest.getNumberOfCores()) {
+                largest = simulatedServer;
+            }
+        }
+        return largest;
     }
 }

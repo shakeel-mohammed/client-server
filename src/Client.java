@@ -35,6 +35,7 @@ public class Client {
     private Socket clientSocket;
     private DataInputStream in;
     private DataOutputStream out;
+    private SimulatedSystem simulatedSystem;
 
     public void createConnection(String ip, int port) {
         try {
@@ -177,16 +178,11 @@ public class Client {
         }
     }
 
-    public void getServerStateInformation() {
-        String responseToGets = sendMessage("GETS All");
-        System.out.println("Indication Reponse to GETS: " + responseToGets);
-        String[] serverInformation = responseToGets.split(" ");
+    public void getServerStateInformation(String query) {
+        String responseToQuery = sendMessage(query);
+        System.out.println("Indication Reponse to GETS: " + responseToQuery);
+        String[] serverInformation = responseToQuery.split(" ");
         int numberOfServers = Integer.parseInt(serverInformation[1]);
-
-        // each available server is sent as a new line, with a newline character
-        // eg. "juju 1 inactive -1 2 4000 16000 0 0\n"
-        // we don't need to keep sending OK, we just need to keep reading from the stream.
-        // once we receive a ".", we then send the OK response.
 
         try {
             out.write("OK\n".getBytes());
@@ -197,22 +193,16 @@ public class Client {
             int read;
             while((read = in.read(buffer)) != -1) {
                 resp = new String(buffer, 0, read);
-                System.out.println("ended");
                 break;
             };
-            SimulatedSystem system = new SimulatedSystem(numberOfServers, resp);
-            // String event;
-            // while ((event = sendOKCommand()).trim() != ".") {
-            //     Thread.sleep(1000);
-            //     if (event.equals("ERR")) {
-            //         System.out.println("encountered an error.");
-            //         break;
-            //     } else {
-            //         System.out.println("incoming event: " + event);
-            //     }
-            // }
+            simulatedSystem = new SimulatedSystem(numberOfServers, resp, in, out);
+            System.out.println("Updated simulated server store...");
+            simulatedSystem.printServerStore();
+
             String responseToOK = sendOKCommand();
-            System.out.println("responseToOK: " + responseToOK);
+            if (!responseToOK.trim().equals(".")) {
+                throw new Error("Unexpected ACK response from ds-sim server: " + resp);
+            }
         } catch (Exception exc) {
             System.out.println("exception: " + exc);
         }
@@ -228,10 +218,22 @@ public class Client {
         if (isConnectionEstablished) {
             System.out.println("Server connected!");
 
-            String responseToREDY = client.sendMessage("REDY");
-            System.out.println("Response to REDY: " + responseToREDY);
+            JobN job = new JobN(client.sendMessage("REDY"));
+            System.out.println("new job...");
+            job.display();
 
-            client.getServerStateInformation();
+            String serverInformationQuery = 
+                "GETS Capable " + 
+                    job.getCoresRequired() + 
+                    " " + job.getMemoryRequired() + 
+                    " " + job.getDiskRequired();
+
+            client.getServerStateInformation(serverInformationQuery);
+
+            SimulatedServer largestServer = client.simulatedSystem.getLargestServer();
+            System.out.println("Displaying information for largest server...");
+            largestServer.display();
+            largestServer.scheduleJob(job.getID());
 
             // String event;
             // while (!((event = client.sendReadyCommand()) == "NONE")) {
