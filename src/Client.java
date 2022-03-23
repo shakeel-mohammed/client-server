@@ -180,6 +180,8 @@ public class Client {
     public void getServerStateInformation() {
         String responseToGets = sendMessage("GETS All");
         System.out.println("Indication Reponse to GETS: " + responseToGets);
+        String[] serverInformation = responseToGets.split(" ");
+        int numberOfServers = Integer.parseInt(serverInformation[1]);
 
         // each available server is sent as a new line, with a newline character
         // eg. "juju 1 inactive -1 2 4000 16000 0 0\n"
@@ -198,7 +200,7 @@ public class Client {
                 System.out.println("ended");
                 break;
             };
-            System.out.println("all data: " + resp);
+            SimulatedSystem system = new SimulatedSystem(numberOfServers, resp);
             // String event;
             // while ((event = sendOKCommand()).trim() != ".") {
             //     Thread.sleep(1000);
