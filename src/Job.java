@@ -1,5 +1,7 @@
 
-public class JobN {
+public class Job {
+    private String jobState;
+    private Double startTime;
     private Double submitTime;
     private int jobID;
     private Double estimatedRunTime;
@@ -7,17 +9,15 @@ public class JobN {
     private int memory;
     private int disk;
 
-    JobN(String strigifiedJobNInformation) {
-        // break the string by the space between each attribute
-        String[] jobInformation = strigifiedJobNInformation.split(" ");
-        
-        // the location of each attribute is pre-determined. We can use this to correctly assign state variables.
-        this.submitTime = Double.parseDouble(jobInformation[1]);
-        this.jobID = Integer.parseInt(jobInformation[2]);
-        this.estimatedRunTime = Double.parseDouble(jobInformation[3]);
-        this.core = Integer.parseInt(jobInformation[4]);
-        this.memory = Integer.parseInt(jobInformation[5]);
-        this.disk = Integer.parseInt(jobInformation[6]);
+    Job(JobInformation info) {
+        this.jobState = info.jobState;
+        this.jobID = info.jobID;
+        this.submitTime = info.submitTime;
+        this.startTime = info.startTime;
+        this.estimatedRunTime = info.estimatedRunTime;
+        this.core = info.core;
+        this.memory = info.memory;
+        this.disk = info.disk;
     }
 
     public int getID() {
@@ -36,9 +36,15 @@ public class JobN {
         return this.disk;
     }
 
+    public boolean isComplete() {
+        return this.jobState.equals("completed");
+    }
+
     public void display() {
         System.out.println("================");
+        System.out.println("Job State: " + jobState);
         System.out.println("Submit Time: " + submitTime);
+        System.out.println("Start Time: " + startTime);
         System.out.println("Job ID: " + jobID);
         System.out.println("Est Run Time: " + estimatedRunTime);
         System.out.println("Job Cores Required: " + core);

@@ -12,6 +12,7 @@ public class SimulatedServer {
     private int disk;
     private int numWaitingJobs;
     private int numRunningJobs;
+    private Job[] jobList;
 
     private DataInputStream in;
     private DataOutputStream out;
@@ -59,6 +60,64 @@ public class SimulatedServer {
         } catch (IOException e) {
             System.out.println("IOException: " + e);
         }
+    }
+
+    public String sendMessage(String msg) {
+        try {
+            out.write((msg + "\n").getBytes());
+            out.flush();
+            String resp = in.readLine();
+            return resp;
+        } catch (IOException e) {
+            System.out.println("Exception: " + e);
+            return "";
+        }
+    }
+
+    public void queryJobList() {
+        try {
+            String command = "LSTJ " + this.serverType + " " + this.serverID + "\n";
+            String responseToQuery = sendMessage(command);
+            System.out.println("Indication Reponse to LSTJ: " + responseToQuery);
+
+            String[] jobsIndicativeInformation = responseToQuery.split(" ");
+            int numberOfJobs = Integer.parseInt(jobsIndicativeInformation[1]);
+
+            out.write("OK\n".getBytes());
+            out.flush();
+
+            byte[] buffer = new byte[1024];
+            String resp = "";
+            int read;
+            while((read = in.read(buffer)) != -1) {
+                resp = new String(buffer, 0, read);
+                break;
+            };
+
+            this.jobList = new Job[numberOfJobs];
+
+            String[] jobs = resp.split("\n");
+
+            for (int i = 0; i < this.jobList.length; i++) {
+                Job job = new Job(new JobInformationBuilder(jobs[i], true).build());
+                this.jobList[i] = job;
+            }
+
+            String responseToOK = sendMessage("OK");
+            if (!responseToOK.trim().equals(".")) {
+                throw new Error("Unexpected ACK response from ds-sim server: " + resp);
+            }
+        } catch (IOException e) {
+            System.out.println("IOException: " + e);
+        }
+    }
+
+    public void displayJobList() {
+        System.out.println("======= Displaying Job List ========");
+        for(Job job : this.jobList) {
+            job.display();
+        }
+        System.out.println("======= Complete ========");
     }
 
     public void display() {

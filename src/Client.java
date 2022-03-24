@@ -139,33 +139,6 @@ public class Client {
         }
     }
 
-    public String sendReadyCommand() {
-        try {
-            System.out.println("Getting event...");
-            out.write("REDY\n".getBytes());
-            out.flush();
-
-            String resp = in.readLine();
-            return resp;
-        } catch (IOException e) {
-            System.out.println("Exception: " + e);
-            return "";
-        }
-    }
-
-    public String sendOKCommand() {
-        try {
-            out.write("OK\n".getBytes());
-            out.flush();
-
-            String resp = in.readLine();
-            return resp;
-        } catch (IOException e) {
-            System.out.println("Exception: " + e);
-            return "";
-        }
-    }
-
     public String sendMessage(String msg) {
         try {
             out.write((msg + "\n").getBytes());
@@ -199,7 +172,7 @@ public class Client {
             System.out.println("Updated simulated server store...");
             simulatedSystem.printServerStore();
 
-            String responseToOK = sendOKCommand();
+            String responseToOK = sendMessage("OK");
             if (!responseToOK.trim().equals(".")) {
                 throw new Error("Unexpected ACK response from ds-sim server: " + resp);
             }
@@ -218,32 +191,37 @@ public class Client {
         if (isConnectionEstablished) {
             System.out.println("Server connected!");
 
-            JobN job = new JobN(client.sendMessage("REDY"));
-            System.out.println("new job...");
-            job.display();
+            String event;
+            while (!(event = client.sendMessage("REDY")).contains("NONE")) { // we're in trouble if any other response contains this substring
+                if (event.trim().equals("ERR")) {
+                    System.out.println("encountered an error: " + event);
+                    break;
+                    // throw? catch somewhere else?
+                }
+                System.out.println("new response to REDY: " + event);
+                Job job = new Job(new JobInformationBuilder(event, false).build());
 
-            String serverInformationQuery = 
-                "GETS Capable " + 
-                    job.getCoresRequired() + 
-                    " " + job.getMemoryRequired() + 
-                    " " + job.getDiskRequired();
+                System.out.println("Job is complete? " + job.isComplete());
 
-            client.getServerStateInformation(serverInformationQuery);
+                if (!job.isComplete()) {
+                    String serverInformationQuery = 
+                        "GETS Capable " + 
+                            job.getCoresRequired() + 
+                            " " + job.getMemoryRequired() + 
+                            " " + job.getDiskRequired();
+    
+                    client.getServerStateInformation(serverInformationQuery);
+        
+                    SimulatedServer largestServer = client.simulatedSystem.getLargestServer();
+                    System.out.println("Displaying information for largest server...");
+                    largestServer.display();
+                    largestServer.scheduleJob(job.getID());
+                    largestServer.queryJobList();
+                    largestServer.displayJobList();
+                }
 
-            SimulatedServer largestServer = client.simulatedSystem.getLargestServer();
-            System.out.println("Displaying information for largest server...");
-            largestServer.display();
-            largestServer.scheduleJob(job.getID());
-
-            // String event;
-            // while (!((event = client.sendReadyCommand()) == "NONE")) {
-            //     if (event.equals("ERR")) {
-            //         System.out.println("encountered an error.");
-            //         break;
-            //     } else {
-            //         System.out.println("incoming event: " + event);
-            //     }
-            // }
+                Thread.sleep(3000);
+            }
         }
 
         client.closeConnectionGracefully();
