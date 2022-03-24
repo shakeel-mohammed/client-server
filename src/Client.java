@@ -48,74 +48,27 @@ public class Client {
         }
     }
 
-    public boolean initiateHandshake () {
-        try {
-            out.write(("HELO\n").getBytes());
-            out.flush();
-
-            String resp = in.readLine();
-
-            if (resp.trim().equals("OK")) {
-                System.out.println("Server responded to handshake correctly");
-                return true;
-            } else {
-                throw new Exception("Server did not respond to handshake correctly");
-            }
-        } catch (IOException e) {
-            System.out.println("IOException: " + e);
-            return false;
-        } catch (Exception e) {
-            System.out.println("Exception: " + e);
-            return false;
-        }
-    }
-
-    public boolean authenticate(String username) {
-        try {
-            String authString = "AUTH " + username;
-            out.write((authString + "\n").getBytes());
-            out.flush();
-
-            String resp = in.readLine();
-
-            if (!(resp.trim().equals("OK"))) {
-                throw new Exception("Unable to authenticate");
-            }
-            return true;
-        } catch (IOException e) {
-            System.out.println("Exception: " + e);
-            return false;
-        } catch (Exception e) {
-            System.out.println("Exception: " + e);
-            return false;
-        }
-    }
-
     public boolean establishConnectionWithHandShake () {
         // create a connection with the server
         this.createConnection("127.0.0.1", 50000);
 
-        // begin handshake processs. 1. HELO, 2. AUTH
-        boolean isHandshakeInitiatedSucessfully = this.initiateHandshake();
-        boolean isAuthenticated = this.authenticate("some_random_auth_str");
-
-        // response was appropriate in both steps. Connection established
-        if (isHandshakeInitiatedSucessfully && isAuthenticated) {
-            return true;
-        } else {
+        // begin handshake process
+        // Step 1: Send HELO
+        String responseToHello = this.sendMessage("HELO");
+        if (!responseToHello.trim().equals("OK")) {
             return false;
         }
-    }
+        System.out.println("Server responded to handshake correctly.");
 
-    public void terminateConnection() {
-        try {
-            in.close();
-            out.close();
-            clientSocket.close();
-            System.out.println("Connection closed");
-        } catch (IOException e) {
-            System.out.println("Exception: " + e);
+        // Step 2: Send AUTH
+        String responseToAuth = this.sendMessage("AUTH some_random_auth_str");
+        if (!responseToAuth.trim().equals("OK")) {
+            return false;
         }
+        System.out.println("Server responded to auth correctly.");
+
+        // server responded correctly in both steps. Connection established successfully
+        return true;
     }
 
     public void closeConnectionGracefully () {
@@ -128,7 +81,10 @@ public class Client {
 
             if (resp.trim().equals("QUIT")) {
                 System.out.println("Closing connection gracefully");
-                terminateConnection();
+                in.close();
+                out.close();
+                clientSocket.close();
+                System.out.println("Connection closed");
             } else {;
                 throw new Exception("Server did not respond to QUIT command correctly");
             }
@@ -220,7 +176,7 @@ public class Client {
                     largestServer.displayJobList();
                 }
 
-                Thread.sleep(3000);
+                Thread.sleep(1000);
             }
         }
 
