@@ -1,8 +1,7 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 
 public class SimulatedServer {
+    private ClientServerConnection connection = ClientServerConnection.getInstance();
+
     private String serverType;
     private int serverID;
     private String state;
@@ -14,13 +13,7 @@ public class SimulatedServer {
     private int numRunningJobs;
     private Job[] jobList;
 
-    private DataInputStream in;
-    private DataOutputStream out;
-
-    SimulatedServer(String strigifiedServerInformation, DataInputStream in, DataOutputStream out) {
-        this.in = in;
-        this.out = out;
-
+    SimulatedServer(String strigifiedServerInformation) {
         // break the string by the space between each attribute
         String[] serverInformation = strigifiedServerInformation.split(" ");
         
@@ -51,64 +44,38 @@ public class SimulatedServer {
     public void scheduleJob(int jobID) {
         try {
             String command = "SCHD " + jobID + " " + this.serverType + " " + this.serverID + "\n";
-            out.write(command.getBytes());
-            out.flush();
-            String resp = in.readLine();
-            if (!resp.trim().equals("OK")) {
-                throw new Error("Unexpected job scheduling response from ds-sim server: " + resp);
+            String resposeToJobSchedule = connection.sendMessage(command);
+            if (!resposeToJobSchedule.trim().equals("OK")) {
+                throw new Error("Unexpected job scheduling response from ds-sim server: " + resposeToJobSchedule);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("IOException: " + e);
-        }
-    }
-
-    public String sendMessage(String msg) {
-        try {
-            out.write((msg + "\n").getBytes());
-            out.flush();
-            String resp = in.readLine();
-            return resp;
-        } catch (IOException e) {
-            System.out.println("Exception: " + e);
-            return "";
         }
     }
 
     public void queryJobList() {
         try {
             String command = "LSTJ " + this.serverType + " " + this.serverID + "\n";
-            String responseToQuery = sendMessage(command);
-            System.out.println("Indication Reponse to LSTJ: " + responseToQuery);
+            String responseToQuery = connection.sendMessage(command);
 
             String[] jobsIndicativeInformation = responseToQuery.split(" ");
             int numberOfJobs = Integer.parseInt(jobsIndicativeInformation[1]);
-
-            out.write("OK\n".getBytes());
-            out.flush();
-
-            byte[] buffer = new byte[1024];
-            String resp = "";
-            int read;
-            while((read = in.read(buffer)) != -1) {
-                resp = new String(buffer, 0, read);
-                break;
-            };
-
             this.jobList = new Job[numberOfJobs];
 
-            String[] jobs = resp.split("\n");
+            String jobListString = connection.sendMessage("OK", true);
+            String[] jobs = jobListString.split("\n");
 
             for (int i = 0; i < this.jobList.length; i++) {
                 Job job = new Job(new JobInformationBuilder(jobs[i], true).build());
                 this.jobList[i] = job;
             }
 
-            String responseToOK = sendMessage("OK");
+            String responseToOK = connection.sendMessage("OK");
             if (!responseToOK.trim().equals(".")) {
-                throw new Error("Unexpected ACK response from ds-sim server: " + resp);
+                throw new Error("Unexpected ACK response from ds-sim server: " + responseToOK);
             }
-        } catch (IOException e) {
-            System.out.println("IOException: " + e);
+        } catch (Exception e) {
+            System.out.println("Exception: " + e);
         }
     }
 

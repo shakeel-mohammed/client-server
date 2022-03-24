@@ -40,6 +40,11 @@ public class Job {
         return this.jobState.equals("completed");
     }
 
+    public String buildQueryForCapableServer(){
+        String query = "GETS Capable " + getCoresRequired() + " " + getMemoryRequired() + " " + getDiskRequired();
+        return query;
+    }
+
     public void display() {
         System.out.println("================");
         System.out.println("Job State: " + jobState);

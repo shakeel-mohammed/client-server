@@ -1,15 +1,13 @@
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 
 public class SimulatedSystem {
     private SimulatedServer[] serverStore;
 
-    SimulatedSystem(int numServers, String strigifiedServers, DataInputStream in, DataOutputStream out) {
+    SimulatedSystem(int numServers, String strigifiedServers) {
         this.serverStore = new SimulatedServer[numServers];
         String[] serversInformation = strigifiedServers.split("\n");
 
         for (int i = 0; i < this.serverStore.length; i++) {
-            SimulatedServer server = new SimulatedServer(serversInformation[i], in, out);
+            SimulatedServer server = new SimulatedServer(serversInformation[i]);
             this.serverStore[i] = server;
         }
     }
