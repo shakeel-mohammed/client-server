@@ -29,7 +29,6 @@
 public class Client {
     private ClientServerConnection connection = ClientServerConnection.getInstance();
     private SimulatedSystem simulatedSystem;
-    private int pauseDurationBetweenRedyCommands = 500;
 
     // doing this here rather than in the SimulatedSystem because we want to based our responses off an updated system for each new job.
     public void getDSSystemInfo(String query) {
@@ -77,11 +76,7 @@ public class Client {
                     System.out.println("Largest server:");
                     largestServer.display();
                     largestServer.scheduleJob(job.getID());
-                    largestServer.queryJobList();
-                    largestServer.displayJobList();
                 }
-
-                Thread.sleep(client.pauseDurationBetweenRedyCommands);
             }
         }
 

@@ -43,7 +43,7 @@ public class SimulatedServer {
 
     public void scheduleJob(int jobID) {
         try {
-            String command = "SCHD " + jobID + " " + this.serverType + " " + this.serverID + "\n";
+            String command = "SCHD " + jobID + " " + this.serverType + " " + this.serverID;
             String resposeToJobSchedule = connection.sendMessage(command);
             if (!resposeToJobSchedule.trim().equals("OK")) {
                 throw new Error("Unexpected job scheduling response from ds-sim server: " + resposeToJobSchedule);
@@ -55,7 +55,7 @@ public class SimulatedServer {
 
     public void queryJobList() {
         try {
-            String command = "LSTJ " + this.serverType + " " + this.serverID + "\n";
+            String command = "LSTJ " + this.serverType + " " + this.serverID;
             String responseToQuery = connection.sendMessage(command);
 
             String[] jobsIndicativeInformation = responseToQuery.split(" ");

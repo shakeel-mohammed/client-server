@@ -66,11 +66,12 @@ public class ClientServerConnection {
 
     public String sendMessage(String msg, Boolean isMultiLineResponse) {
         try {
+            if (!isMultiLineResponse) return this.sendMessage(msg);
             out.write((msg + "\n").getBytes());
             out.flush();
 
             String resp = "";
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[2048]; // TODO: find a better way to allocate size. should be dynamic. Maybe array of arrays?
             int read;
             while((read = in.read(buffer)) != -1) {
                 resp = new String(buffer, 0, read);
