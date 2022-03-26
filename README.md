@@ -54,3 +54,23 @@ if we're scheduling based on server core count
 2. joon 2
 3. joon 3
 4. joon 2 (because joon 2 has 15 available cores)
+
+So really, to achieve LRR, we need to handle as follows:
+1. first job comes in - done
+2. query the list of servers capable of handling the job (the largest servers are bound to come up) - done
+3. we find the serverType that has the highest cores (largest server type) - done
+4. we store that serverType in the SimulatedSystem - done
+5. we schedule the job to the first server of that type
+6. we store the ID of that server
+7. x job comes in 
+8. query the list of servers capable of handling the job (the largest servers are bound to come up)
+9. use a findServersByServerType function to first list down based on stored serverType
+10. use a getNextServer function to get the next server in the list based the ID of the stored server (if storedServer ID is -1, we just get the first server)
+11. update the storedServer to the result of the getNextServer function
+12. schedule the job to that server 
+13. repeat process
+
+1. find the first server that we have of that type
+2. schedule the job to that server
+3. we store the 
+3. when another job comes in, regardless of how many cores it requires, when we ask for compatible servers, it will return all servers of the largest type again. We again find the 

@@ -37,8 +37,16 @@ public class SimulatedServer {
         return this.state == "booting";
     }
 
+    public int getID() {
+        return this.serverID;
+    }
+
     public int getNumberOfCores() {
         return this.core;
+    }
+
+    public String getServerType() {
+        return this.serverType.trim();
     }
 
     public void scheduleJob(int jobID) {

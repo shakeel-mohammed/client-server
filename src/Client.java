@@ -28,7 +28,7 @@
 
 public class Client {
     private ClientServerConnection connection = ClientServerConnection.getInstance();
-    private SimulatedSystem simulatedSystem;
+    private SimulatedSystem simulatedSystem = new SimulatedSystem();
 
     // doing this here rather than in the SimulatedSystem because we want to based our responses off an updated system for each new job.
     public void getDSSystemInfo(String query) {
@@ -38,10 +38,8 @@ public class Client {
 
         try {
             String responseToOK1 = connection.sendMessage("OK", true);
-            simulatedSystem = new SimulatedSystem(numberOfServers, responseToOK1);
-            System.out.println("Updated simulated server store to...");
-            simulatedSystem.printServerStore();
-
+            simulatedSystem.refreshServerStore(numberOfServers, responseToOK1);
+            
             String responseToOK2 = connection.sendMessage("OK");
             if (!responseToOK2.trim().equals(".")) {
                 throw new Error("Unexpected ACK response from ds-sim server: " + responseToOK2);
@@ -71,11 +69,12 @@ public class Client {
                 if (!job.isComplete()) {
                     String query = job.buildQueryForCapableServer();
                     client.getDSSystemInfo(query);
+
+                    String typeOfLargestServer = client.simulatedSystem.getTypeOfLargestServer();
         
-                    SimulatedServer largestServer = client.simulatedSystem.getLargestServer();
-                    System.out.println("Largest server:");
-                    largestServer.display();
-                    largestServer.scheduleJob(job.getID());
+                    SimulatedServer serverToScheduleJob = client.simulatedSystem.findNextServerByType(typeOfLargestServer);
+                    serverToScheduleJob.scheduleJob(job.getID());
+                    client.simulatedSystem.setMostRecentlyUsedServer(serverToScheduleJob);
                 }
             }
         }
