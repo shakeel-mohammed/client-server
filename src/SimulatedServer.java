@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class SimulatedServer {
     private ClientServerConnection connection = ClientServerConnection.getInstance();
@@ -11,7 +12,7 @@ public class SimulatedServer {
     private int disk;
     private int numWaitingJobs;
     private int numRunningJobs;
-    private Job[] jobList;
+    private ArrayList<Job> jobList = new ArrayList<Job>();
 
     SimulatedServer(String strigifiedServerInformation) {
         // break the string by the space between each attribute
@@ -72,15 +73,10 @@ public class SimulatedServer {
             int adjustedRecordLength = lengthPerRecord + 3; // adding some buffer
             byte[] buffer = new byte[numberOfJobs * adjustedRecordLength];
 
-            this.jobList = new Job[numberOfJobs];
-
             String jobListString = connection.sendMessage("OK", buffer);
             String[] jobs = jobListString.split("\n");
-
-            for (int i = 0; i < this.jobList.length; i++) {
-                Job job = new Job(new JobInformationBuilder(jobs[i], true).build());
-                this.jobList[i] = job;
-            }
+            
+            for (String job: jobs) this.jobList.add(new Job(new JobInformationBuilder(job, true).build()));
 
             String responseToOK = connection.sendMessage("OK");
             if (!responseToOK.trim().equals(".")) {

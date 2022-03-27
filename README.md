@@ -74,3 +74,31 @@ So really, to achieve LRR, we need to handle as follows:
 2. schedule the job to that server
 3. we store the 
 3. when another job comes in, regardless of how many cores it requires, when we ask for compatible servers, it will return all servers of the largest type again. We again find the 
+
+## Test Results
+### Sample config 2
+# -------------------------------------------------------------------------------------
+# 0 tiny servers used with a utilisation of 0.00 at the cost of $0.00
+# 0 small servers used with a utilisation of 0.00 at the cost of $0.00
+# 0 medium servers used with a utilisation of 0.00 at the cost of $0.00
+# 0 large servers used with a utilisation of 0.00 at the cost of $0.00
+# 10 xlarge servers used with a utilisation of 98.88 at the cost of $753.73
+# ==================================== [ Summary ] ====================================
+# actual simulation end time: 268869, #jobs: 500 (failed 0 times)
+# total #servers used: 10, avg util: 98.88% (ef. usage: 98.97%), total cost: $753.73
+# avg waiting time: 33232, avg exec time: 6322, avg turnaround time: 39554
+
+This is in-line with provided ds-client implementation
+
+
+### Sample config 1
+# -------------------------------------------------------------------------------------
+# 0 juju servers used with a utilisation of 0.00 at the cost of $0.00
+# 0 joon servers used with a utilisation of 0.00 at the cost of $0.00
+# 1 super-silk servers used with a utilisation of 100.00 at the cost of $0.43
+# ==================================== [ Summary ] ====================================
+# actual simulation end time: 2045, #jobs: 10 (failed 0 times)
+# total #servers used: 1, avg util: 100.00% (ef. usage: 100.00%), total cost: $0.43
+# avg waiting time: 49, avg exec time: 728, avg turnaround time: 777
+
+This is in-line with provided ds-client implementation
