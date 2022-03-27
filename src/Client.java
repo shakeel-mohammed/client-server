@@ -27,56 +27,13 @@
  */
 
 public class Client {
-    private ClientServerConnection connection = ClientServerConnection.getInstance();
-    private SimulatedSystem simulatedSystem = new SimulatedSystem();
-
-    // doing this here rather than in the SimulatedSystem because we want to based our responses off an updated system for each new job.
-    public void getDSSystemInfo(String query) {
-        String responseToQuery = connection.sendMessage(query);
-        String[] serverInformation = responseToQuery.split(" ");
-        int numberOfServers = Integer.parseInt(serverInformation[1]);
-
-        try {
-            String responseToOK1 = connection.sendMessage("OK", true);
-            simulatedSystem.refreshServerStore(numberOfServers, responseToOK1);
-            
-            String responseToOK2 = connection.sendMessage("OK");
-            if (!responseToOK2.trim().equals(".")) {
-                throw new Error("Unexpected ACK response from ds-sim server: " + responseToOK2);
-            }
-        } catch (Exception exc) {
-            System.out.println("exception: " + exc);
-        }
-    }
-
     public static void main(String[] args) throws Exception {
-        Client client = new Client();
         ClientServerConnection connection = ClientServerConnection.getInstance();
+        Orchestrator orchestrator = new Orchestrator("lrr");
 
         if (connection.wasHandshakeSuccessful()) {
             System.out.println("Server connected!");
-
-            String event;
-            while (!(event = connection.sendMessage("REDY")).contains("NONE")) { // we're in trouble if any other response contains this substring
-                if (event.trim().equals("ERR")) {
-                    System.out.println("encountered an error: " + event);
-                    break;
-                    // throw? catch somewhere else?
-                }
-                System.out.println("new response to REDY: " + event);
-                Job job = new Job(new JobInformationBuilder(event, false).build());
-
-                if (!job.isComplete()) {
-                    String query = job.buildQueryForCapableServer();
-                    client.getDSSystemInfo(query);
-
-                    String typeOfLargestServer = client.simulatedSystem.getTypeOfLargestServer();
-        
-                    SimulatedServer serverToScheduleJob = client.simulatedSystem.findNextServerByType(typeOfLargestServer);
-                    serverToScheduleJob.scheduleJob(job.getID());
-                    client.simulatedSystem.setMostRecentlyUsedServer(serverToScheduleJob);
-                }
-            }
+            orchestrator.run();
         }
 
         connection.closeConnectionGracefully();

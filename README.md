@@ -60,15 +60,15 @@ So really, to achieve LRR, we need to handle as follows:
 2. query the list of servers capable of handling the job (the largest servers are bound to come up) - done
 3. we find the serverType that has the highest cores (largest server type) - done
 4. we store that serverType in the SimulatedSystem - done
-5. we schedule the job to the first server of that type
-6. we store the ID of that server
-7. x job comes in 
-8. query the list of servers capable of handling the job (the largest servers are bound to come up)
-9. use a findServersByServerType function to first list down based on stored serverType
-10. use a getNextServer function to get the next server in the list based the ID of the stored server (if storedServer ID is -1, we just get the first server)
-11. update the storedServer to the result of the getNextServer function
-12. schedule the job to that server 
-13. repeat process
+5. we schedule the job to the first server of that type - done
+6. we store the ID of that server - done
+7. x job comes in - done
+8. query the list of servers capable of handling the job (the largest servers are bound to come up) - done
+9. use a findServersByServerType function to first list down based on stored serverType - done
+10. use a getNextServer function to get the next server in the list based the ID of the stored server (if storedServer ID is -1, we just get the first server) - done
+11. update the storedServer to the result of the getNextServer function - done
+12. schedule the job to that server - done
+13. repeat process - done
 
 1. find the first server that we have of that type
 2. schedule the job to that server
