@@ -68,9 +68,13 @@ public class SimulatedServer {
 
             String[] jobsIndicativeInformation = responseToQuery.split(" ");
             int numberOfJobs = Integer.parseInt(jobsIndicativeInformation[1]);
+            int lengthPerRecord = Integer.parseInt(jobsIndicativeInformation[2]);
+            int adjustedRecordLength = lengthPerRecord + 3; // adding some buffer
+            byte[] buffer = new byte[numberOfJobs * adjustedRecordLength];
+
             this.jobList = new Job[numberOfJobs];
 
-            String jobListString = connection.sendMessage("OK", true);
+            String jobListString = connection.sendMessage("OK", buffer);
             String[] jobs = jobListString.split("\n");
 
             for (int i = 0; i < this.jobList.length; i++) {

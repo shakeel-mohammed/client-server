@@ -8,8 +8,15 @@ public class SimulatedSystem {
     public void queryDSSim(String query) {
         String responseToQuery = connection.sendMessage(query);
         System.out.println(responseToQuery);
+
+        String[] queryIndicativeInformation = responseToQuery.split(" ");
+        int numberOfServers = Integer.parseInt(queryIndicativeInformation[1]);
+        int lengthPerRecord = Integer.parseInt(queryIndicativeInformation[2]);
+        int adjustedRecordLength = lengthPerRecord + 3; // adding some buffer
+        byte[] buffer = new byte[numberOfServers * adjustedRecordLength];
+
         try {
-            String responseToOK1 = connection.sendMessage("OK", true);
+            String responseToOK1 = connection.sendMessage("OK", buffer);
             this.refreshServerStore(responseToOK1);
             
             String responseToOK2 = connection.sendMessage("OK");
