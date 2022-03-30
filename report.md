@@ -27,8 +27,11 @@
 
 1. What is this project?
 
-This report presented is to implement scheduling system that implements the Largest Round Robin algorithm whilst distributing jobs to servers in a simulated distributed system (provided by the MQ University). We want to compare with a reference implementation (also provided by MQ University).
+This report presented is to describe the overview, design, and implementation of a scheduling system that implements the Largest Round Robin algorithm whilst distributing jobs to servers in a simulated distributed system (provided by the MQ University). We want to compare with a reference implementation (also provided by MQ University).
 
-This project is a demonstration on how a simple distributed system could serve it's purpose. At it's core, a distributed system is a system where it's various components are spread across a network. Think of cloud computing where thousands of computers can be used to handle complex tasks by breaking down jobs and handling them simulantously. This is a distributed system, because the load is distributed across multiple machines to achieve results that are much fast and reliable than having one server that handles all request. Each distributed system requires a mechanism to orchestrate and handle each request. This component typically does not use it's processing power to process the request/job itself, but rather is used as a orchestrator that decides which computer should handle a particular request and use it's processing power to handle the orchestration/triaging of requests rather actually processing the requests themselves. 
+At it's core, a distributed system is a system where it's various components are spread across a network. Think of cloud computing where thousands of computers can be used to handle complex tasks by breaking down jobs and handling them simulantously. This is a distributed system.
 
-What is the goal
+In a distributed system, the load is distributed across multiple machines to achieve results that are much faster and reliable than having one server that handles all requests. Each distributed system requires a mechanism to orchestrate and handle each request. This component is responsible for making scheduling decisions which may vary depending on the desired behaviour the algorithm.
+
+What is the goal?
+The goal for this project is to have a client (described below) which connects to the ds-sim server (described below), receives jobs to be scheduled, and makes scheduling decisions based on LLR. Once the ds-sim server has run out of jobs to be process, the client should gracefully disconnect from the ds-sim server.
