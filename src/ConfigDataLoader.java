@@ -22,7 +22,12 @@ public class ConfigDataLoader {
     public static ConfigDataLoader getInstance() {
         if (configDataLoader == null) {
             File configFile = new File("config.properties");
-            configDataLoader = new ConfigDataLoader(configFile);
+            boolean exists = configFile.exists();
+            if (exists) {
+                configDataLoader = new ConfigDataLoader(configFile);
+            } else {
+                configDataLoader = new ConfigDataLoader(new File("../config.properties"));
+            }
         }
         return configDataLoader;
     }
