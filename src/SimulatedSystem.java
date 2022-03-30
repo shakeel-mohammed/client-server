@@ -1,7 +1,9 @@
 import java.util.ArrayList;
 
 public class SimulatedSystem {
+    private ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
     private ClientServerConnection connection = ClientServerConnection.getInstance();
+    
     private ArrayList<SimulatedServer> serverStore = new ArrayList<SimulatedServer>();
     private String largestServerType;
 
@@ -12,7 +14,9 @@ public class SimulatedSystem {
         String[] queryIndicativeInformation = responseToQuery.split(" ");
         int numberOfServers = Integer.parseInt(queryIndicativeInformation[1]);
         int lengthPerRecord = Integer.parseInt(queryIndicativeInformation[2]);
-        int adjustedRecordLength = lengthPerRecord + 3; // adding some buffer
+
+        // adding some buffer to record length
+        int adjustedRecordLength = lengthPerRecord + Integer.parseInt(configDataLoader.get("buffer_for_record_length"));
         byte[] buffer = new byte[numberOfServers * adjustedRecordLength];
 
         try {

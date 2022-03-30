@@ -4,10 +4,10 @@ public class Orchestrator {
     private SimulatedSystem simulatedSystem = new SimulatedSystem();
     private String largestServerType;
     private SimulatedServer mostRecentlyUsedServer = null;
-    private String algorithm = "lrr";
+    private String algorithm;
 
     public Orchestrator(String algorithm) {
-        this.algorithm = algorithm.toLowerCase();
+        this.algorithm = algorithm.toLowerCase().trim();
     }
 
     public void run() {

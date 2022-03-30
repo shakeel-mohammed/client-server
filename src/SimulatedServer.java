@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 
 public class SimulatedServer {
+    private ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
     private ClientServerConnection connection = ClientServerConnection.getInstance();
 
     private String serverType;
@@ -70,7 +71,9 @@ public class SimulatedServer {
             String[] jobsIndicativeInformation = responseToQuery.split(" ");
             int numberOfJobs = Integer.parseInt(jobsIndicativeInformation[1]);
             int lengthPerRecord = Integer.parseInt(jobsIndicativeInformation[2]);
-            int adjustedRecordLength = lengthPerRecord + 3; // adding some buffer
+
+            // adding some buffer to record length
+            int adjustedRecordLength = lengthPerRecord + Integer.parseInt(configDataLoader.get("buffer_for_record_length"));
             byte[] buffer = new byte[numberOfJobs * adjustedRecordLength];
 
             String jobListString = connection.sendMessage("OK", buffer);
