@@ -4,18 +4,17 @@ import java.net.Socket;
 import java.io.IOException;
 
 public class ClientServerConnection {
+    private ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
     private static ClientServerConnection clientServerConnection = null;
     private Socket clientSocket;
     private DataInputStream in;
     private DataOutputStream out;
 
-    private String ip;
-    private int port;
+    private String ip = configDataLoader.get("host");
+    private int port = Integer.parseInt(configDataLoader.get("port"));
     private boolean isHandshakeSuccessful;
 
-    ClientServerConnection(String ip, int port) {
-        this.ip = ip;
-        this.port = port;
+    ClientServerConnection() {
         this.setupConnection();
         this.isHandshakeSuccessful = this.handshake();
     }
@@ -45,7 +44,7 @@ public class ClientServerConnection {
 
     public static ClientServerConnection getInstance() {
         if (clientServerConnection == null) {
-            clientServerConnection = new ClientServerConnection("127.0.0.1", 50000);
+            clientServerConnection = new ClientServerConnection();
         }
         return clientServerConnection;
     }
