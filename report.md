@@ -66,18 +66,27 @@ The protocol is as follows:
     d. closes the connection gracefully. 
 6. steps 4 and 5 continue to occur until there are no longer any jobs left to process.
 
+[we need to talk more about the protocol. good example in ds-sim user guide]
+
 # Design
-Our design needs to cater for the connection between the two main components, as well as break down the current state of the simulated system at any one time to handle incoming jobs. This is what is used to support the use of scheduling decisions that depend on knowing granular details on each of the following:
-- the server
-- each Job (including job ID, job type, number of cores required to run the job, etc)
-- each Server in the simulated system (the server ID, server type, number of cores available, number of running jobs, etc)
+Our design needs to cater for the connection between the two main components; the server and the client, as well as break down the current state of the simulated ds-sim system at any one time to handle incoming jobs. The two main entities in ds-sim are: This is what is used to support the use of scheduling decisions that depend on knowing granular details on each of the following:
+- Jobs (including job ID, job type, number of cores required to run the job, etc)
+- Servers (including server ID, server type, number of cores available, number of running jobs, etc)
+
+[We need to talk about each of these in more detail]
+
+Processing information on each of these entities is crucial for our design to be able to make the correct scheduling decisions to achieve our goal: scheduling based on Largest Round Robin.
 
 What exactly is Largest Round Robin? How does it work?
 A little bit about the Largest Round Robin algorithm. It works by scheduling jobs to servers that are of the type in the system have the highest number of cores. Eg, if there are a total of 5 servers: 1x supersilk (16 cores), 2x joon (12 cores), 2x juju (8 cores), the type of servers which the largest number of cores would be supersilk, even if at the time of job scheduling, there are more available cores on a joon server, as per largest round robin, the job should still be scheduled on the supersilk server. In this algorithm, all servers expect the ones of the largest type are ignored throughout the whole run.
 
-The design achieves LLR by the use of the following components within the Client: (for later, rename the Client.java to Main.java or App.java)
-1. A ConfigDataLoader 
-2. A ClientServerConnection class
+The design achieves LLR by the use of the following components within the Client: [for later, rename the Client.java to Main.java or App.java]
+## A ConfigDataLoader class
+This componment allows us to create a central singleton object that's primary purpose is to server as a configuration parameter store. It reads parameters (key/value pairs) from the config.properties file and makes those values available to our application. Our application is then able to extract those configurable parameters and change it's behaviour, without needing to re-compile the code.
+
+## A ClientServerConnection class
+This component is responsible for handling the socket connection between the client and the ds-sim server. It is a singleton instance that can be utilised by any other class that needs to send/receive messages to/from the server. The interface provides a standardized way in which each message is sent, and it supports the use of a buffer passed into the sendMessage function, this will tell the object to expect a multi-line response and use the buffer to parse it. The class itself is not responsible for the initialisation of the buffer because the size of the buffer varies depending on the requirements of the component sending/receiving the message.
+
 3. An Orchestrator class
 4. A SimulatedSystem class
 5. A SimulatedServer class
@@ -85,4 +94,4 @@ The design achieves LLR by the use of the following components within the Client
 7. A JobInformation class
 8. A Job class
 
-Our design also needs to be easily extendible to support additional algorithms in the future. This meant that each of these components shouldn't make scheduling decisions themselves (implement the alorgithm), but rather, they should provide the tools for the task implementing the algorithm to make informed decisions.
+Our design also needs to be easily extendible to support additional algorithms in the future. This meant that these scheduling decisions should not be baked into each component, but rather, they should provide the tools for the task implementing the algorithm to make informed decisions. The decision making should be handled entirely by one component, and it should be extendable to allow for decisions based on different rules (more algorithms).
