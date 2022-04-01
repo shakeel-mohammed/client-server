@@ -2,19 +2,19 @@
 1. Introduction (1/2 page) - done
     - What is this project? - done
         - briefly explain distributed systems, breifly explain ds-sim, explain the goal of this project - done
-2. System Overview (1/2 page)
+2. System Overview (1/2 page) - done
     - high-level description of the system, include a diagram to show overall flow - need to add diagram
-    - be sure to talk about how ds-sim works - halfway
-    - talk about the protocol - halfway
+    - be sure to talk about how ds-sim works - done
+    - talk about the protocol - done
 3. Design (1 page) - thursday
-    - include design philosophy (i wanted a design that was easily controlled and extended to support future goals)
-    - talk about the alogrithm (and how the client can be extended to support more algorithms)
-    - considerations
-    - constraints
-    - functionality of each component on the client-side
-    - talk about each class
+    - include design philosophy (i wanted a design that was easily controlled and extended to support future goals) - done
+    - talk about the alogrithm (and how the client can be extended to support more algorithms) - done
+    - considerations - done
+    - constraints - done
+    - functionality of each component on the client-side - done
+    - talk about each class - done
 4. Implementation (2 pages) - friday
-    - technologies, libraries, data structures, (invariants?) used
+    - technologies, libraries, data structures, (invariants?) used [in-built Java ArrayList, DataInputStream, DataOutputStream, Socket]
     - talk about HOW YOU USED the components above
 5. References - friday
     - project git repository link
@@ -44,32 +44,45 @@ The system is comprised of two main components:
 1. the ds-sim Server (provided by MQ University) - the component intiates the request to process each job + the component that simulates the compute resources available.
 2. the Client (this project) which is to be compared to the reference implementation (provided by MQ University) - the component that handles the request to process each job and selects compute resources on which to schedule jobs for processing.
 
-The ds-sim server (1) simulates a distributed system. It is responsible for initiating the request to process a job, as well as providing the simulated compute resources (servers) on which each job may potentially be run. The purpose of the client (2) is to select the most appropriate simulated server on which the job should be processed.
+### The ds-sim server
+The ds-sim server (1) simulates a distributed system. It is responsible for initiating the request to process a job, as well as providing the simulated compute resources (servers) on which each job may potentially be run. The ds-sim server can be run with the following optional parameters:
+- -c - this allows us to define a configuration file on which we want the simulated system to be based on. This file will contain the number and types of of servers and jobs. 
+[list other options]
 
+
+### The Client
+The purpose of the client (2) is to select the most appropriate simulated server on which the job should be processed.
+
+### Communication Protocol
 The two components communicate via a Socket, which uses TCP at the network layer. See here \cite[https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html]
 
 [INSERT DIAGRAM HERE]
 
 The protocol is as follows:
-1. the ds-sim server is started and waits for incoming socket connections
-2. the client is started and initiates a handshake
-3. once handshake is successful, the client sends REDY
-4. the server responds with either:
+1. the ds-sim server is started, creates a simulated system based on the confile file passed in, and waits for incoming socket connections
+2. the client is started and initiates a handshake with the server
+3. server replies with HELO
+4. client sends AUTH command
+5. server accepts
+6. the server writes information on the simulated system to a ds-system.xml file
+6. in a loop, the following happens:
+- the client sends REDY command
+- the server responds with either:
     a. a new job
     b. a completed job
     c. an error
     d. a no new jobs command
-5. the client handles as follows:
-    a. selects the correct server to handle the job based on the LLR algorithm (after querying the system for a list of servers capable of handling the job)
+- the client handles as follows:
+    a. quries the server to find servers capable of handling the jobs (GETS CAPABLE command) and selects the correct server to handle the job based on the LLR algorithm.
     b. does not require handling
-    c. ??
-    d. closes the connection gracefully. 
-6. steps 4 and 5 continue to occur until there are no longer any jobs left to process.
-
-[we need to talk more about the protocol. good example in ds-sim user guide]
+    c. the logs the error and continues to process the next job
+    d. this command will break the loop
+7. once the loop is complete (no more jobs left to process), the client sends QUIT command
+8. the server replies with QUIT
+9. the connection is closed gracefully
 
 # Design
-Our design needs to cater for the connection between the two main components; the server and the client, as well as break down the current state of the simulated ds-sim system at any one time to handle incoming jobs. The two main entities in ds-sim are: This is what is used to support the use of scheduling decisions that depend on knowing granular details on each of the following:
+The design must cater for the connection between the two main components; the server and the client, as well as break down the current state of the simulated ds-sim system at any one time to handle incoming jobs. The two main entities in ds-sim are: This is what is used to support the use of scheduling decisions that depend on knowing granular details on each of the following:
 - Jobs (including job ID, job type, number of cores required to run the job, etc)
 - Servers (including server ID, server type, number of cores available, number of running jobs, etc)
 
@@ -80,18 +93,38 @@ Processing information on each of these entities is crucial for our design to be
 What exactly is Largest Round Robin? How does it work?
 A little bit about the Largest Round Robin algorithm. It works by scheduling jobs to servers that are of the type in the system have the highest number of cores. Eg, if there are a total of 5 servers: 1x supersilk (16 cores), 2x joon (12 cores), 2x juju (8 cores), the type of servers which the largest number of cores would be supersilk, even if at the time of job scheduling, there are more available cores on a joon server, as per largest round robin, the job should still be scheduled on the supersilk server. In this algorithm, all servers expect the ones of the largest type are ignored throughout the whole run.
 
-The design achieves LLR by the use of the following components within the Client: [for later, rename the Client.java to Main.java or App.java]
-## A ConfigDataLoader class
+The design achieves job scheduling by Largest Round Robin by the use of the following components: [for later, rename the Client.java to Main.java or App.java]
+## ConfigDataLoader
 This componment allows us to create a central singleton object that's primary purpose is to server as a configuration parameter store. It reads parameters (key/value pairs) from the config.properties file and makes those values available to our application. Our application is then able to extract those configurable parameters and change it's behaviour, without needing to re-compile the code.
 
-## A ClientServerConnection class
+## ClientServerConnection
 This component is responsible for handling the socket connection between the client and the ds-sim server. It is a singleton instance that can be utilised by any other class that needs to send/receive messages to/from the server. The interface provides a standardized way in which each message is sent, and it supports the use of a buffer passed into the sendMessage function, this will tell the object to expect a multi-line response and use the buffer to parse it. The class itself is not responsible for the initialisation of the buffer because the size of the buffer varies depending on the requirements of the component sending/receiving the message.
 
-3. An Orchestrator class
-4. A SimulatedSystem class
-5. A SimulatedServer class
-6. A JobInformationBuilder class
-7. A JobInformation class
-8. A Job class
+## Orchestrator
+This component is resposinble for implementing the Largest Round Robin algorithm. It is where we would go to add support for more alogrithms. The Orchestrator uses the methods provided by the SimulatedSystem, SimulatedServer, and Job classes to decide which scheduling decisions should be made.
 
-Our design also needs to be easily extendible to support additional algorithms in the future. This meant that these scheduling decisions should not be baked into each component, but rather, they should provide the tools for the task implementing the algorithm to make informed decisions. The decision making should be handled entirely by one component, and it should be extendable to allow for decisions based on different rules (more algorithms).
+## SimulatedSystem
+This component is responsible for containing information on the simulated system which the ds-sim server provides. This is where we go to find the largest type of server, number of servers, etc.
+
+## SimulatedServer
+Each instance of this component represents one server which exists in the ds-sim server. It contains information on the type of server, number of cores, number of jobs running, etc.
+
+## Job
+Each instance of this component represents one job which has been sent to the client by the ds-sim server. It contains information on the state of the job, job ID, start time, end time, estimated run time, as well as the amount of cores, memory, and disk required to process the job. Each job instance also contains a method which can be used to generate a query that can be sent to the ds-sim server in order to query a list of servers capable of processing the job. 
+
+The following components allow the system to standardise the instantiation of a job object. This is because the ds-sim server is capable of providing job information in more than one format. e.g:
+- response to LSTJ command
+- response to REDY command
+With the use of the two components below, we can correctly format the job information in both scenarios.
+## JobInformationBuilder
+Uses the builder pattern to construct and return a JobInformation object based on the format of the stringifed job provided (response to LSTJ vs REDY command)
+
+## Job Information
+A Job Information object contains the correctly mapped attributes of one job.
+
+Our design also needs to be easily extendible to support additional algorithms in the future. This meant that these scheduling decisions should not be baked into each component, but rather, they should provide the tools for the task implementing the algorithm to make informed decisions. The decision making should be handled entirely by one component (the Orchestrator), and it should be extendable to allow for decisions based on different rules (more algorithms).
+
+## Constraints
+
+## Considerations
+
