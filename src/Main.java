@@ -26,7 +26,7 @@
  * - TERM - Server termination
  */
 
-public class Client {
+public class Main {
     public static void main(String[] args) throws Exception {
         ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
         ClientServerConnection clientServerConnection = ClientServerConnection.getInstance();
