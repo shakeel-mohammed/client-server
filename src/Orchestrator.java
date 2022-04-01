@@ -1,6 +1,6 @@
 
 public class Orchestrator {
-    private ClientServerConnection connection = ClientServerConnection.getInstance();
+    private ClientServerConnection clientServerConnection = ClientServerConnection.getInstance();
     private SimulatedSystem simulatedSystem = new SimulatedSystem();
     private String largestServerType;
     private SimulatedServer mostRecentlyUsedServer = null;
@@ -22,9 +22,9 @@ public class Orchestrator {
         }
     }
 
-    public void runWithLargestRoundRobin() {
+    private void runWithLargestRoundRobin() {
         String event;
-        while (!(event = connection.sendMessage("REDY")).contains("NONE")) { // we're in trouble if any other response contains this substring
+        while (!(event = clientServerConnection.sendMessage("REDY")).contains("NONE")) { // we're in trouble if any other response contains this substring
             if (event.trim().equals("ERR")) {
                 System.out.println("encountered an error: " + event);
                 break;

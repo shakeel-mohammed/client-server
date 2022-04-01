@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class SimulatedServer {
     private ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
-    private ClientServerConnection connection = ClientServerConnection.getInstance();
+    private ClientServerConnection clientServerConnection = ClientServerConnection.getInstance();
 
     private String serverType;
     private int serverID;
@@ -54,7 +54,7 @@ public class SimulatedServer {
     public void scheduleJob(int jobID) {
         try {
             String command = "SCHD " + jobID + " " + this.serverType + " " + this.serverID;
-            String resposeToJobSchedule = connection.sendMessage(command);
+            String resposeToJobSchedule = clientServerConnection.sendMessage(command);
             if (!resposeToJobSchedule.trim().equals("OK")) {
                 throw new Error("Unexpected job scheduling response from ds-sim server: " + resposeToJobSchedule);
             }
@@ -66,7 +66,7 @@ public class SimulatedServer {
     public void queryJobList() {
         try {
             String command = "LSTJ " + this.serverType + " " + this.serverID;
-            String responseToQuery = connection.sendMessage(command);
+            String responseToQuery = clientServerConnection.sendMessage(command);
 
             String[] jobsIndicativeInformation = responseToQuery.split(" ");
             int numberOfJobs = Integer.parseInt(jobsIndicativeInformation[1]);
@@ -76,12 +76,12 @@ public class SimulatedServer {
             int adjustedRecordLength = lengthPerRecord + Integer.parseInt(configDataLoader.get("buffer_for_record_length"));
             byte[] buffer = new byte[numberOfJobs * adjustedRecordLength];
 
-            String jobListString = connection.sendMessage("OK", buffer);
+            String jobListString = clientServerConnection.sendMessage("OK", buffer);
             String[] jobs = jobListString.split("\n");
             
             for (String job: jobs) this.jobList.add(new Job(new JobInformationBuilder(job, true).build()));
 
-            String responseToOK = connection.sendMessage("OK");
+            String responseToOK = clientServerConnection.sendMessage("OK");
             if (!responseToOK.trim().equals(".")) {
                 throw new Error("Unexpected ACK response from ds-sim server: " + responseToOK);
             }

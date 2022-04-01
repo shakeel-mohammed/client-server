@@ -29,14 +29,14 @@
 public class Client {
     public static void main(String[] args) throws Exception {
         ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
-        ClientServerConnection connection = ClientServerConnection.getInstance();
+        ClientServerConnection clientServerConnection = ClientServerConnection.getInstance();
         Orchestrator orchestrator = new Orchestrator(configDataLoader.get("algorithm"));
 
-        if (connection.wasHandshakeSuccessful()) {
+        if (clientServerConnection.wasHandshakeSuccessful()) {
             System.out.println("Server connected!");
             orchestrator.run();
         }
 
-        connection.closeConnectionGracefully();
+        clientServerConnection.closeConnectionGracefully();
     }
 }

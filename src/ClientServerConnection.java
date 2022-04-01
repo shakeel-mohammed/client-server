@@ -7,11 +7,11 @@ public class ClientServerConnection {
     private ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
     private static ClientServerConnection clientServerConnection = null;
     private Socket clientSocket;
-    private DataInputStream in;
-    private DataOutputStream out;
+    private DataInputStream inputStream;
+    private DataOutputStream oututStream;
 
-    private String ip = configDataLoader.get("host");
-    private int port = Integer.parseInt(configDataLoader.get("port"));
+    private String hostIp = configDataLoader.get("hostIp");
+    private int hostPort = Integer.parseInt(configDataLoader.get("hostPort")); 
     private boolean isHandshakeSuccessful;
 
     ClientServerConnection() {
@@ -22,20 +22,20 @@ public class ClientServerConnection {
     public void setupConnection() {
         try {
             System.out.println("Connecting to server...");
-            clientSocket = new Socket(this.ip, this.port);
-            in = new DataInputStream(this.clientSocket.getInputStream());
-            out = new DataOutputStream(this.clientSocket.getOutputStream());
+            clientSocket = new Socket(this.hostIp, this.hostPort);
+            inputStream = new DataInputStream(this.clientSocket.getInputStream());
+            oututStream = new DataOutputStream(this.clientSocket.getOutputStream());
         } catch (IOException e) {
             System.out.println("Unable to establish connection with server. Exception: " + e);
         }
     }
 
     public DataInputStream getDataInputStream() {
-        return in;
+        return inputStream;
     }
 
     public DataOutputStream getDataOutputStream() {
-        return out;
+        return oututStream;
     }
 
     public Boolean wasHandshakeSuccessful() {
@@ -51,10 +51,10 @@ public class ClientServerConnection {
 
     public String sendMessage(String msg) {
         try {
-            out.write((msg + "\n").getBytes());
-            out.flush();
+            oututStream.write((msg + "\n").getBytes());
+            oututStream.flush();
             
-            String resp = in.readLine();
+            String resp = inputStream.readLine();
             return resp;
         } catch (IOException e) {
             System.out.println("Exception: " + e);
@@ -70,12 +70,12 @@ public class ClientServerConnection {
     public String sendMessage(String msg, byte[] buffer) {
         try {
             if (buffer == null) return this.sendMessage(msg);
-            out.write((msg + "\n").getBytes());
-            out.flush();
+            oututStream.write((msg + "\n").getBytes());
+            oututStream.flush();
 
             String resp = "";
             int read;
-            while((read = in.read(buffer)) != -1) {
+            while((read = inputStream.read(buffer)) != -1) {
                 resp = new String(buffer, 0, read);
                 break;
             }; 
@@ -113,8 +113,8 @@ public class ClientServerConnection {
 
             if (resp.trim().equals("QUIT")) {
                 System.out.println("Closing connection gracefully");
-                in.close();
-                out.close();
+                inputStream.close();
+                oututStream.close();
                 clientSocket.close();
                 System.out.println("Connection closed");
             } else {;

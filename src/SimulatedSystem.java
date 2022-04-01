@@ -2,13 +2,13 @@ import java.util.ArrayList;
 
 public class SimulatedSystem {
     private ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
-    private ClientServerConnection connection = ClientServerConnection.getInstance();
+    private ClientServerConnection clientServerConnection = ClientServerConnection.getInstance();
     
     private ArrayList<SimulatedServer> serverStore = new ArrayList<SimulatedServer>();
     private String largestServerType;
 
     public void queryDSSim(String query) {
-        String responseToQuery = connection.sendMessage(query);
+        String responseToQuery = clientServerConnection.sendMessage(query);
         System.out.println(responseToQuery);
 
         String[] queryIndicativeInformation = responseToQuery.split(" ");
@@ -20,10 +20,10 @@ public class SimulatedSystem {
         byte[] buffer = new byte[numberOfServers * adjustedRecordLength];
 
         try {
-            String responseToOK1 = connection.sendMessage("OK", buffer);
+            String responseToOK1 = clientServerConnection.sendMessage("OK", buffer);
             this.refreshServerStore(responseToOK1);
             
-            String responseToOK2 = connection.sendMessage("OK");
+            String responseToOK2 = clientServerConnection.sendMessage("OK");
             if (!responseToOK2.trim().equals(".")) {
                 throw new Error("Unexpected ACK response from ds-sim server: " + responseToOK2);
             }
@@ -37,12 +37,6 @@ public class SimulatedSystem {
         for (String server: serversInformation) this.serverStore.add(new SimulatedServer(server));
 
         this.largestServerType = this.getLargestServer().getServerType();
-    }
-
-    public void printServerStore() {
-        for (SimulatedServer simulatedServer: this.serverStore) {
-            simulatedServer.display();
-        }
     }
 
     public String getTypeOfLargestServer() {
