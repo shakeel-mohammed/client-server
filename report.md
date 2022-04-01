@@ -93,8 +93,7 @@ Processing information on each of these entities is crucial for our design to be
 What exactly is Largest Round Robin? How does it work?
 A little bit about the Largest Round Robin algorithm. It works by scheduling jobs to servers that are of the type in the system have the highest number of cores. Eg, if there are a total of 5 servers: 1x supersilk (16 cores), 2x joon (12 cores), 2x juju (8 cores), the type of servers which the largest number of cores would be supersilk, even if at the time of job scheduling, there are more available cores on a joon server, as per largest round robin, the job should still be scheduled on the supersilk server. In this algorithm, all servers expect the ones of the largest type are ignored throughout the whole run.
 
-The design achieves job scheduling by Largest Round Robin by the use of the following components: [for later, rename the Client.java to Main.java or App.java]
-
+The design achieves job scheduling by Largest Round Robin by the use of the following components:
 ## ConfigDataLoader
 A singleton object that's primary purpose is to serve as a configuration parameter store. It reads key/value pairs from the config.properties file and makes those parameters available to our application. Our application is then able to change it's behaviour based on the specified configuration, without requiring to be re-compiled.
 
