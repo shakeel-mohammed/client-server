@@ -96,7 +96,7 @@ public class ClientServerConnection {
             System.out.println("Server responded to handshake correctly.");
 
             // Step 2: Send AUTH
-            String responseToAuth = this.sendMessage("AUTH some_random_auth_str");
+            String responseToAuth = this.sendMessage("AUTH " + System.getProperty("user.name"));
             if (!responseToAuth.trim().equals("OK")) return false;
             System.out.println("Server responded to auth correctly.");
 

@@ -35,7 +35,6 @@ TODOS:
 - diagram for system overview - tomorrow
 - diagram for communication protocol - tomorrow
 - run on a normal computer using instructions here - tomorrow
-- run against the tests?? - tomorrow
 
 # Introduction
 1. What is this project?

@@ -23,6 +23,7 @@ public class Orchestrator {
     }
 
     private void runWithLargestRoundRobin() {
+        Boolean shouldDisplayJobList = false;
         String event;
         while (!(event = clientServerConnection.sendMessage("REDY")).contains("NONE")) { // we're in trouble if any other response contains this substring
             if (event.trim().equals("ERR")) {
@@ -46,9 +47,11 @@ public class Orchestrator {
                 serverToScheduleJob.scheduleJob(job.getID());
                 this.mostRecentlyUsedServer = serverToScheduleJob;
 
-                System.out.println("querying server job list...");
-                serverToScheduleJob.queryJobList();
-                serverToScheduleJob.displayJobList();
+                if (shouldDisplayJobList) {
+                    System.out.println("querying server job list...");
+                    serverToScheduleJob.queryJobList();
+                    serverToScheduleJob.displayJobList();
+                }
             }
         }
     }
