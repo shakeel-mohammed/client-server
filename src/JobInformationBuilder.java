@@ -33,7 +33,7 @@ public class JobInformationBuilder {
     }
 
     // JOBN 156 5 8 3 2700 2600
-    public void parseBasedOnNewJobString(String[] jobInfo) {
+    private void parseBasedOnNewJobString(String[] jobInfo) {
       this.jobState = parseJobState(jobInfo[0]);
       this.submitTime = Double.parseDouble(jobInfo[1]);
       this.jobID = Integer.parseInt(jobInfo[2]);
@@ -44,7 +44,7 @@ public class JobInformationBuilder {
     }
 
     // JCPL endTime jobID serverType serverID
-    public void parseBasedOnCompletedJobString(String[] jobInfo) {
+    private void parseBasedOnCompletedJobString(String[] jobInfo) {
       this.jobState = parseJobState(jobInfo[0]);
       this.endTime = Double.parseDouble(jobInfo[1]);
       this.jobID = Integer.parseInt(jobInfo[2]);
@@ -53,7 +53,7 @@ public class JobInformationBuilder {
     }
 
     // jobID jobState submitTime startTime estRunTime core memory disk
-    public void parseBasedOnListJobsResponse(String[] jobInfo) {
+    private void parseBasedOnListJobsResponse(String[] jobInfo) {
       this.jobID = Integer.parseInt(jobInfo[0]);
       this.jobState = parseJobState(jobInfo[1]);
       this.submitTime = Double.parseDouble(jobInfo[2]);
@@ -64,7 +64,7 @@ public class JobInformationBuilder {
       this.disk = Integer.parseInt(jobInfo[7]);
     }
 
-    public String parseJobState(String typeString) {
+    private String parseJobState(String typeString) {
         switch(typeString) {
             case "JOBN":
             case "0":

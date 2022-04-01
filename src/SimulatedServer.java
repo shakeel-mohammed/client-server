@@ -31,14 +31,6 @@ public class SimulatedServer {
         this.numRunningJobs = Integer.parseInt(serverInformation[8]);
     }
 
-    public boolean isActive() {
-        return this.state == "active";
-    }
-
-    public boolean isBooting() {
-        return this.state == "booting";
-    }
-
     public int getID() {
         return this.serverID;
     }

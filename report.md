@@ -13,9 +13,9 @@
     - constraints - done
     - functionality of each component on the client-side - done
     - talk about each class - done
-4. Implementation (2 pages) - nearly done
-    - technologies, libraries, data structures used [in-built Java Properties, ArrayList, DataInputStream, DataOutputStream, Socket]
-    - talk about HOW YOU USED the components above
+4. Implementation (2 pages) - done
+    - technologies, libraries, data structures used [in-built Java Properties, ArrayList, DataInputStream, DataOutputStream, Socket] - done
+    - talk about HOW YOU USED the components above - done
 5. References - friday
     - project git repository link
     - sources
@@ -24,6 +24,18 @@
         - make bibtex file
         - cite in main file
     e.g the java client employs comparable interface \cite []....
+
+
+TODOS:
+- find citation for Largest Round Robin - now
+- create overleaf project and compile into .tex file - today
+    - should include references
+    - git repos
+    - use bibtex citations
+- diagram for system overview - tomorrow
+- diagram for communication protocol - tomorrow
+- run on a normal computer using instructions here - tomorrow
+- run against the tests?? - tomorrow
 
 # Introduction
 1. What is this project?
@@ -54,9 +66,9 @@ The ds-sim server (1) simulates a distributed system. It is responsible for init
 The purpose of the client (2) is to select the most appropriate simulated server on which the job should be processed.
 
 ### Communication Protocol
-The two components communicate via a Socket, which uses TCP at the network layer. See here \cite[https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html]
+The two components communicate via a Socket, which uses TCP at the network layer. See here \TODO cite[https://docs.oracle.com/javase/tutorial/networking/sockets/definition.html]
 
-[INSERT DIAGRAM HERE]
+\TODO [INSERT DIAGRAM HERE]
 
 The protocol is as follows:
 1. the ds-sim server is started, creates a simulated system based on the confile file passed in, and waits for incoming socket connections
@@ -75,21 +87,39 @@ The protocol is as follows:
 - the client handles as follows:
     a. quries the server to find servers capable of handling the jobs (GETS CAPABLE command) and selects the correct server to handle the job based on the LLR algorithm.
     b. does not require handling
-    c. the logs the error and continues to process the next job
+    c. the logs the error and stops the job scheduling process.
     d. this command will break the loop
 7. once the loop is complete (no more jobs left to process), the client sends QUIT command
 8. the server replies with QUIT
 9. the connection is closed gracefully
 
 # Design
-The design must cater for the connection between the two main components; the server and the client, as well as break down the current state of the simulated ds-sim system at any one time to handle incoming jobs. The two main entities in ds-sim are the following, these are the entities that are used to make scheduling decisions:
-- Jobs (including job ID, job type, number of cores required to run the job, etc)
-- Servers (including server ID, server type, number of cores available, number of running jobs, etc)
+The design must cater for the connection between the two main components; the server and the client, as well as break down the current state of the simulated ds-sim system at any one time to handle incoming jobs. The two main entities in ds-sim are Servers and Jobs. These are the entities that are used to make scheduling decisions.
 
-[We need to talk about each of these in more detail]
+### Servers
+In a distrubuted system, a server is a compute resource equipped with its own CPU, memory, and disk. They can be either hardware/physical or vitual servers. In the case of the ds-sim system, each simulated server is virtual. They have the following attributes:
+- server ID - a server identifier.
+- server type - an identifier of server category.
+- limit - the number of servers of a particular type.
+- boot-up time - the time in seconds it takes for the server to boot.
+- hourly rate - the hourly rental rate in dollars. The charge is calculated based on the amount of seconds the server was used for.
+- cores - the number of CPU cores.
+- memory - the amount of memory in MB.
+- disk - the amount of disk space in MB.
+
+### Jobs
+In this context, a Job can represent a task, or a single linux process. They are to be seen as rigid. i.e. if a job have compute requirements of 2 Cores, 200MB of memory and 1GB of disk space, and will take 10 seconds to complete, scheduling it on a server with twice the amount of the required resources will not result in a faster completion time. It will still take 20 seconds to complete. Jobs have the following attributes:
+- job ID - a job identifier.
+- type - an identifier for job category.
+- submit time - the submit time could either be the initial time a job was submitted, or when it was re-submitted in the case of jobs being pre-empted, killed, or failed.
+- estimated run time - estimated based on the actual run time of a job.
+- cores - the number of CPU cores required to process the job.
+- memory - the amount of RAM in MB required to process the job.
+- disk - the amount of disk space in MB required to process the job.
 
 Processing information on each of these entities is crucial for our design to be able to make the correct scheduling decisions to achieve our goal: scheduling based on Largest Round Robin.
 
+\TODO cite [could use a citation here]
 What exactly is Largest Round Robin? How does it work?
 A little bit about the Largest Round Robin algorithm. It works by scheduling jobs to servers that are of the type in the system have the highest number of cores. Eg, if there are a total of 5 servers: 1x supersilk (16 cores), 2x joon (12 cores), 2x juju (8 cores), the type of servers which the largest number of cores would be supersilk, even if at the time of job scheduling, there are more available cores on a joon server, as per largest round robin, the job should still be scheduled on the supersilk server. In this algorithm, all servers expect the ones of the largest type are ignored throughout the whole run.
 
@@ -180,8 +210,6 @@ numRunningJobs
 jobList
 
 Methods:
-isActive
-isBooting
 getID
 getNumberOfCores
 getServerType
@@ -222,11 +250,11 @@ Attributes:
 Same as Job class
 
 Methods:
-parseJobState
-parseBasedOnNewJobString
-parseBasedOnCompletedJobString
-parseBasedOnListJobsResponse
-build
+parseJobState - private
+parseBasedOnNewJobString - private
+parseBasedOnCompletedJobString - private
+parseBasedOnListJobsResponse - private
+build - public
 
 ## Job Information
 A Job Information object contains the correctly mapped attributes of one job.
@@ -236,9 +264,7 @@ Our design also needs to be easily extendible to support additional algorithms i
 
 ## Constraints
 ### Java Runtime
-This project requires a Java 1.8 to be run.
-
-### CPU Requirements
+This project requires a Java 1.8 to be run, which can be downloaded by following the instructions here, [https://docs.datastax.com/en/jdk-install/doc/jdk-install/installOpenJdkDeb.html]
 
 ## Considerations
 As per the ds-sim protocol, there are two methods by which a connecting client could retrieve information about the simulated system:
@@ -248,21 +274,29 @@ As per the ds-sim protocol, there are two methods by which a connecting client c
 This design uses the GETS CAPABLE command to increase efficiency and search only for the servers that are capable of handling the particular job ready for processing. 
 
 
-
 # Implementation
-
 ## Technologies
+- Java 1.8 - Java is a programming language and computing platform first released by Sun Microsystems in 1995. It has evolved from humble beginnings to power a large share of today’s digital world, by providing the reliable platform upon which many services and applications are built. The project has been created using Java 1.8.
+- Bash scripting to assist with compilation.
 
 ## Libraries
-The java client employs the use of the follow types as provided by Java 1.8:
-- Socket
-- DataInputStream
-- DataOutputStream
-....
+The java client employs the use of the following classes provided by Java 1.8:
+### IO/Networking
+- Socket - A socket is an endpoint for communication between two machines. The client/server connect via a Socket. This Socket connection is established and persisted throughout the entire run.
+- DataInputStream - A data input stream lets an application read primitive Java data types from an underlying input stream in a machine-independent way. The client/server connection employs a DataInputStream to read responses from the server.
+- DataOutputStream - A data output stream lets an application write primitive Java data types to an output stream in a portable way. The client/server connection employs a DataOutputStream to send messages to the server.
+- IOException - Signals that an I/O exception of some sort has occurred. This class is the general class of exceptions produced by failed or interrupted I/O operations. This error is thrown if the ClientServerConnection class encounters an I/O exception.
+- File - An abstract representation of file and directory pathnames. The ConfigDataLoader employs the use of the java File class to create a File object, which represents the config.properties file. This object is then used to read each property.
+- FileInputStream - A FileInputStream obtains input bytes from a file in a file system. The ConfigDataLoader employs the use of a FileInputStream to read each line from the config.properties file and store them.
+- FileNotFoundException - Signals that an attempt to open the file denoted by a specified pathname has failed. This error will be thrown if the config.properties file cannot be found. 
 
-## Data Structures
+### Utils
+- Properties - The Properties class represents a persistent set of properties. The Properties can be saved to a stream or loaded from a stream. The ConfigDataLoader employs the user of a Properties object to presist the key/value pairs provided in the config.properties file.
 
+### Data Structures
+- ArrayList - A resizable-array implementation of the List interface. Java Arraylists are utilised by the SimulatedSystem class to keep track of the SimulatedServers within the system, as well as the SimulatedServer class to keep track of the Jobs relating to the SimulatedServer.
 
+## Job Scheduling
 The implementation as per the ds-sim protocol and LRR is as follows:
 1. the main.java file initializes the Config Data Store (which is then available pre-initialized to any other objects)
 2. the main.java file initializes the Client Server Connection (which is then available pre-initialized to any other objects). Once created, the handshake process between the client and server is started 
@@ -289,3 +323,14 @@ The implementation as per the ds-sim protocol and LRR is as follows:
 17. the found server is saved as the most recently used server.
 18. goes back to step 7.
 19. breaks out of the loop and returns the thread back to the main.java file where the connection is ended gracefully.
+
+## How to run 
+### Compile
+it comes pre-compiled, but the compile.bash script can be used to compile if required. From the main directory, run "bash scripts/compile.bash". This will compile the files in the /src directory and create or overwrite the files in the /compiled directory.
+
+### To run
+Navigate to the 'config.properties' file and observe the key/values pairs. The host IP, port, algorithm (currently, only supports llr) are configurable from this file. There is also a value for 'buffer_for_record_length' which is the amount of bytes added to the calculated length of buffers used throughout the client. 
+
+Navigate to the /compiled directory and run 'java Main'.
+
+# References

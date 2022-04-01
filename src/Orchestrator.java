@@ -28,7 +28,6 @@ public class Orchestrator {
             if (event.trim().equals("ERR")) {
                 System.out.println("encountered an error: " + event);
                 break;
-                // throw? catch somewhere else?
             }
             System.out.println("new response to REDY: " + event);
             Job job = new Job(new JobInformationBuilder(event, false).build());
@@ -40,8 +39,16 @@ public class Orchestrator {
                 this.largestServerType = simulatedSystem.getTypeOfLargestServer();
     
                 SimulatedServer serverToScheduleJob = simulatedSystem.findNextServerByType(this.largestServerType, mostRecentlyUsedServer);
+                
+                System.out.println("found available server:");
+                serverToScheduleJob.display();
+
                 serverToScheduleJob.scheduleJob(job.getID());
                 this.mostRecentlyUsedServer = serverToScheduleJob;
+
+                System.out.println("querying server job list...");
+                serverToScheduleJob.queryJobList();
+                serverToScheduleJob.displayJobList();
             }
         }
     }
