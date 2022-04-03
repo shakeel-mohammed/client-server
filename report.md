@@ -298,9 +298,9 @@ The java client employs the use of the following classes provided by Java 1.8:
 
 ## Job Scheduling
 The implementation as per the ds-sim protocol and LRR is as follows:
-1. the main.java file initializes the Config Data Store (which is then available pre-initialized to any other objects)
-2. the main.java file initializes the Client Server Connection (which is then available pre-initialized to any other objects). Once created, the handshake process between the client and server is started 
-3. the main.java file initializes the Orchestrator, which is passed the desired algorithm as an input parameter
+1. the main.java file initializes the Config Data Store (which is then available pre-initialized to any other objects) - done
+2. the main.java file initializes the Client Server Connection (which is then available pre-initialized to any other objects). Once created, the handshake process between the client and server is started - done
+3. the main.java file initializes the Orchestrator, which is passed the desired algorithm as an input parameter - done
 4. the Orchestrator initializes a new DistributedSystem with no servers in it.
 5. If the handshake process has been successful, the main.java file calls the .run() function on the orchestrator
 6. the orchestrator object checks which algorithm it was configured with, and interally call it's runWithLargestRoundRobin() function
