@@ -15,6 +15,9 @@ public class Orchestrator {
             case "lrr":
                 runWithLargestRoundRobin();
                 break;
+            case "fc":
+                runWithFirstCapable();
+                break;
             case "bf":
                 throw new Error("this algorithm has not yet been implemented");
             default:
@@ -40,6 +43,42 @@ public class Orchestrator {
                 this.largestServerType = simulatedSystem.getTypeOfLargestServer();
     
                 SimulatedServer serverToScheduleJob = simulatedSystem.findNextServerByType(this.largestServerType, mostRecentlyUsedServer);
+                
+                System.out.println("found available server:");
+                serverToScheduleJob.display();
+
+                serverToScheduleJob.scheduleJob(job.getID());
+                this.mostRecentlyUsedServer = serverToScheduleJob;
+
+                if (shouldDisplayJobList) {
+                    System.out.println("querying server job list...");
+                    serverToScheduleJob.queryJobList();
+                    serverToScheduleJob.displayJobList();
+                }
+            }
+        }
+    }
+
+    private void runWithFirstCapable() {
+        Boolean shouldDisplayJobList = false;
+        String event;
+        while (!(event = clientServerConnection.sendMessage("REDY")).contains("NONE")) { // we're in trouble if any other response contains this substring
+            if (event.trim().equals("ERR")) {
+                System.out.println("encountered an error: " + event);
+                break;
+            }
+            System.out.println("new response to REDY: " + event);
+            Job job = new Job(new JobInformationBuilder(event, false).build());
+
+            if (!job.isComplete()) {
+                String query = job.buildQueryForCapableServer();
+                simulatedSystem.queryDSSim(query);
+    
+                SimulatedServer serverToScheduleJob = simulatedSystem.getServerStore().get(0);
+
+                if (serverToScheduleJob == null) {
+                    throw new Error("No server capable of handling job");
+                }
                 
                 System.out.println("found available server:");
                 serverToScheduleJob.display();

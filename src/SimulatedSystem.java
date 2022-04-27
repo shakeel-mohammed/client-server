@@ -33,6 +33,7 @@ public class SimulatedSystem {
     }
 
     public void refreshServerStore(String strigifiedServers) {
+        this.serverStore = new ArrayList<SimulatedServer>();
         String[] serversInformation = strigifiedServers.split("\n");
         for (String server: serversInformation) this.serverStore.add(new SimulatedServer(server));
 
