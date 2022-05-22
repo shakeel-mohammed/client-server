@@ -44,37 +44,6 @@ public class SimulatedSystem {
         this.largestServerType = this.getLargestServer().getServerType();
     }
 
-    public void updateServersInStore(ArrayList<SimulatedServer> servers) {
-        // System.out.println("store:");
-        // for (SimulatedServer s: this.serverStore) {
-        //     System.out.println("Server: " + s.getServerType() + " " + s.getID());
-        // }
-
-        for (SimulatedServer server: servers) {
-            // if the server exists in the store, update it in place. Otherwise, add it to the store
-            boolean alreadyInCache = false;
-
-            for (SimulatedServer s: this.serverStore) {
-                if (s.getID() == server.getID() && (s.getServerType().equals(server.getServerType()))) { // we already know its in cache, no point in searching the rest of the cache
-                    alreadyInCache = true;
-
-                    int index = this.serverStore.indexOf(s);
-                    server.setServerCores(s.getServerCores());
-                    this.serverStore.set(index, server);
-                }
-            }
-
-            if (alreadyInCache) {
-                continue;
-            }
-
-            this.serverStore.add(server);
-        }
-        // System.out.println("==== updated server store. printing... =====");
-        // printStore();
-        // System.out.println("==== done =====");
-    }
-
     public String getTypeOfLargestServer() {
         return this.largestServerType;
     }
@@ -137,72 +106,6 @@ public class SimulatedSystem {
             if (simulatedServer.getID() > current.getID()) return simulatedServer;
         }
         return list.get(0);
-    }
-
-    // should this be based by core count + memory + disk space required?
-    public SimulatedServer getSoonestAvailableServerByCoreCount(int coresRequired, ArrayList<SimulatedServer> searchList) {
-        // find the server that can soonest process a job with this many cores required.
-        ArrayList<SimulatedServer> tempList = new ArrayList<SimulatedServer>(0);
-        for (SimulatedServer server: searchList) {
-            for (SimulatedServer simulatedServer: this.serverStore) {
-                if (server.getID() == simulatedServer.getID() && (server.getServerType().equals(simulatedServer.getServerType()))) {
-                    tempList.add(server);
-                }
-            }
-        }
-
-        SimulatedServer found = tempList.get(0);
-
-        for (SimulatedServer simulatedServer: tempList) {
-            if (simulatedServer.getWaitTime(coresRequired) < found.getWaitTime(coresRequired)) {
-                found = simulatedServer;
-            }
-        }
-
-        return found;
-    }
-
-    public SimulatedServer getServerById(String type, int id, ArrayList<SimulatedServer> storeToSearch) {
-        for (SimulatedServer simulatedServer: storeToSearch) {
-            if (simulatedServer.getID() == id && (simulatedServer.getServerType().equals(type.trim()))) {
-                return simulatedServer;
-            }
-        }
-        return null;
-    }
-
-    public void scheduleJob(SimulatedServer server, Job job) {
-        // store that we've used this server in the usedServers list with a calculated serverCores etc.
-        // if the server exists in the store, we update it 
-        // if new to us, we add it to the store
-        SimulatedServer foundServer = findInStoreByTypeAndId(server.getServerType(), server.getID());
-        System.out.println("found this server to send job to:");
-        foundServer.display();
-
-        foundServer.scheduleJob(job.getID());
-        foundServer.setCoresBeingUsed(job.getCoresRequired(), job.getEstimatedRunTime());
-
-        System.out.println("after scheduling the job:");
-        foundServer.display();
-
-        for (SimulatedServer simulatedServer: this.serverStore) {
-            if (simulatedServer.getID() == foundServer.getID() && (simulatedServer.getServerType().equals(foundServer.getServerType()))) {
-                int index = this.serverStore.indexOf(simulatedServer);
-                foundServer.setServerCores(simulatedServer.getServerCores());
-                this.serverStore.set(index, server);
-                break;
-            }
-        }
-        return;
-    }
-
-    public SimulatedServer findInStoreByTypeAndId(String type, int id) {
-        for (SimulatedServer simulatedServer: this.serverStore) {
-            if (simulatedServer.getID() == id && (simulatedServer.getServerType().equals(type.trim()))) {
-                return simulatedServer;
-            }
-        }
-        return null;
     }
 
     public void pushCurrentJob() {
