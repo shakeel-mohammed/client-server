@@ -57,8 +57,6 @@ public class SimulatedServer {
         return this.numWaitingJobs;
     }
 
-
-    // here is where we set how many cores and disk space has been taken up
     public void scheduleJob(int jobID) {
         try {
             String command = "SCHD " + jobID + " " + this.serverType + " " + this.serverID;
@@ -71,6 +69,7 @@ public class SimulatedServer {
         }
     }
 
+    // can potentially be removed
     public void queryJobList() {
         try {
             String command = "LSTJ " + this.serverType + " " + this.serverID;
@@ -110,6 +109,7 @@ public class SimulatedServer {
         }
     }
 
+    // can potentially be removed
     public boolean canHandleJobImmediately(Job job) {
         boolean hasEnoughCores = this.core > job.getCoresRequired();
         boolean hasEnoughMemory = this.memory > job.getMemoryRequired();

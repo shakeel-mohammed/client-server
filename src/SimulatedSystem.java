@@ -64,51 +64,6 @@ public class SimulatedSystem {
         return largest;
     }
 
-    public SimulatedServer getSmallestServer(ArrayList<SimulatedServer> searchList) {
-        // loop over the search list
-        // grab the stored version of each server and do comparison
-        SimulatedServer smallest = searchList.get(0);
-        for (SimulatedServer simulatedServer: searchList) {
-            if (simulatedServer.getNumberOfCores() < smallest.getNumberOfCores()) {
-                smallest = simulatedServer;
-            }
-        }
-        return smallest;
-    }
-
-    public SimulatedServer getBusiestLargestServer() {
-        ArrayList<SimulatedServer> listOfServers = this.findServersByType(this.largestServerType);
-        SimulatedServer busiest = listOfServers.get(0);
-        for (SimulatedServer simulatedServer: listOfServers) {
-            if (simulatedServer.getNumberOfCores() < busiest.getNumberOfCores()) {
-                busiest = simulatedServer;
-            }
-        }
-        return busiest;
-    }
-
-    public SimulatedServer findServerWithLowestWaitTime() {
-        ArrayList<SimulatedServer> listOfServers = this.findServersByType(this.largestServerType);
-        SimulatedServer lowest = listOfServers.get(0);
-        for (SimulatedServer simulatedServer: listOfServers) {
-            if (!simulatedServer.isBooting() && simulatedServer.getEstimatedWaitTime() < lowest.getEstimatedWaitTime()) {
-                lowest = simulatedServer;
-            }
-        }
-        return lowest;
-    }
-
-    public SimulatedServer findServerWithLowestWaitTimeAnySize() {
-        ArrayList<SimulatedServer> listOfServers = this.serverStore;
-        SimulatedServer lowest = listOfServers.get(0);
-        for (SimulatedServer simulatedServer: listOfServers) {
-            if (!simulatedServer.isBooting() && simulatedServer.getEstimatedWaitTime() < lowest.getEstimatedWaitTime()) {
-                lowest = simulatedServer;
-            }
-        }
-        return lowest;
-    }
-
     public ArrayList<SimulatedServer> sortServersByFewestWaitingJobs(ArrayList<SimulatedServer> inputList) {
         Collections.sort(inputList, new Comparator<SimulatedServer>() {
             @Override
@@ -119,27 +74,6 @@ public class SimulatedSystem {
         });
         return inputList;
     }
-
-    // public SimulatedServer findServerThatCanHandleJobImmediately(ArrayList<SimulatedServer> inputList) {
-    //     // sort the servers by their estimated job wait times (lowest first)
-    //     Collections.sort(inputList, new Comparator<SimulatedServer>() {
-    //         @Override
-    //         public int compare(SimulatedServer lhs, SimulatedServer rhs) {
-    //             // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
-    //             return lhs.getEstimatedWaitTime() < rhs.getEstimatedWaitTime() ? -1 : (lhs.getEstimatedWaitTime() > rhs.getEstimatedWaitTime()) ? 1 : 0;
-    //         }
-    //     });
-
-    //     // extract only the servers that are currently active
-    //     ArrayList<SimulatedServer> activeServers = new ArrayList<SimulatedServer>(0);
-    //     for (SimulatedServer simulatedServer: inputList) {
-    //         if (simulatedServer.isActive()) {
-    //             activeServers.add(simulatedServer);
-    //         }
-    //     }
-    //     if (activeServers.size() < 1) return null;
-    //     return activeServers.get(0);
-    // }
 
     public SimulatedServer findServerThatCanHandleJobImmediately(ArrayList<SimulatedServer> inputList) {
         ArrayList<SimulatedServer> listOfServers = inputList;
@@ -163,27 +97,6 @@ public class SimulatedSystem {
         return inputList.get(0);
     }
 
-
-    public SimulatedServer findServerWithCoresAtleast(int cores) {
-        ArrayList<SimulatedServer> listOfServers = this.findServersByType(this.largestServerType);
-        // sort these by cores
-        Collections.sort(listOfServers, new Comparator<SimulatedServer>() {
-            @Override
-            public int compare(SimulatedServer lhs, SimulatedServer rhs) {
-                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
-                return lhs.getNumberOfCores() < rhs.getNumberOfCores() ? -1 : (lhs.getNumberOfCores() > rhs.getNumberOfCores()) ? 1 : 0;
-            }
-        });
-
-        // loop through the list until we reach the first server that has alteast this many cores
-        for (SimulatedServer simulatedServer: listOfServers) {
-            if (simulatedServer.isActive() || simulatedServer.isBooting() && simulatedServer.getNumberOfCores() >= cores) {
-                return simulatedServer;
-            }
-        }
-        return null;
-    }
-
     public SimulatedServer findNextServerByType(String serverType, SimulatedServer current) {
         ArrayList<SimulatedServer> listOfServers = this.findServersByType(serverType);
         SimulatedServer nextServer = this.getNextServerById(listOfServers, current);
@@ -205,18 +118,6 @@ public class SimulatedSystem {
             if (simulatedServer.getID() > current.getID()) return simulatedServer;
         }
         return list.get(0);
-    }
-
-    public void pushCurrentJob() {
-        try {
-            String command = "PSHJ";
-            String resposeToPushJob = clientServerConnection.sendMessage(command);
-            if (!resposeToPushJob.trim().equals("OK")) {
-                throw new Error("Unexpected push job response from ds-sim server: " + resposeToPushJob);
-            }
-        } catch (Exception e) {
-            System.out.println("IOException: " + e);
-        }
     }
 
     public void printStore() {
