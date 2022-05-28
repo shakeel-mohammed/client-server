@@ -48,6 +48,16 @@ public class SimulatedServer {
         return false;
     }
 
+    public boolean isActive() {
+        if (this.state.trim().equals("active")) return true;
+        return false;
+    }
+
+    public int getNumWaitingJobs() {
+        return this.numWaitingJobs;
+    }
+
+
     // here is where we set how many cores and disk space has been taken up
     public void scheduleJob(int jobID) {
         try {
@@ -85,6 +95,18 @@ public class SimulatedServer {
             }
         } catch (Exception e) {
             System.out.println("Exception: " + e);
+        }
+    }
+
+    public int getEstimatedWaitTime() {
+        try {
+            String command = "EJWT " + this.serverType + " " + this.serverID;
+            String responseToQuery = clientServerConnection.sendMessage(command);
+            int estJobWaitTimeInQueue = Integer.parseInt(responseToQuery);
+            return estJobWaitTimeInQueue;
+        } catch (Exception e) {
+            System.out.println("Exception: " + e);
+            return 0;
         }
     }
 
