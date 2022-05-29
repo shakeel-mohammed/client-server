@@ -11,7 +11,7 @@ public class ClientServerConnection {
     private DataOutputStream oututStream;
 
     private String hostIp = configDataLoader.get("hostIp");
-    private int hostPort = Integer.parseInt(configDataLoader.get("hostPort")); 
+    private int hostPort = Integer.parseInt(configDataLoader.get("hostPort"));
     private boolean isHandshakeSuccessful;
 
     ClientServerConnection() {
@@ -53,7 +53,7 @@ public class ClientServerConnection {
         try {
             oututStream.write((msg + "\n").getBytes());
             oututStream.flush();
-            
+
             String resp = inputStream.readLine();
             return resp;
         } catch (IOException e) {
@@ -63,22 +63,26 @@ public class ClientServerConnection {
     }
 
     /**
-     * method used to send a message to server and parse response. 
-     * @param msg string to be sent to the server
-     * @param buffer buffer used to write into. If this parameter is provided, our class will handle response as a multi-line response.
+     * method used to send a message to server and parse response.
+     * 
+     * @param msg    string to be sent to the server
+     * @param buffer buffer used to write into. If this parameter is provided, our
+     *               class will handle response as a multi-line response.
      */
     public String sendMessage(String msg, byte[] buffer) {
         try {
-            if (buffer == null) return this.sendMessage(msg);
+            if (buffer == null)
+                return this.sendMessage(msg);
             oututStream.write((msg + "\n").getBytes());
             oututStream.flush();
 
             String resp = "";
             int read;
-            while((read = inputStream.read(buffer)) != -1) {
+            while ((read = inputStream.read(buffer)) != -1) {
                 resp = new String(buffer, 0, read);
                 break;
-            }; 
+            }
+            ;
 
             return resp;
         } catch (IOException e) {
@@ -87,17 +91,19 @@ public class ClientServerConnection {
         }
     }
 
-    public boolean handshake () {
+    public boolean handshake() {
         if (!isHandshakeSuccessful) {
             // begin handshake process
             // Step 1: Send HELO
             String responseToHello = this.sendMessage("HELO");
-            if (!responseToHello.trim().equals("OK")) return false;
+            if (!responseToHello.trim().equals("OK"))
+                return false;
             System.out.println("Server responded to handshake correctly.");
 
             // Step 2: Send AUTH
             String responseToAuth = this.sendMessage("AUTH " + System.getProperty("user.name"));
-            if (!responseToAuth.trim().equals("OK")) return false;
+            if (!responseToAuth.trim().equals("OK"))
+                return false;
             System.out.println("Server responded to auth correctly.");
 
             this.isHandshakeSuccessful = true;
@@ -106,7 +112,7 @@ public class ClientServerConnection {
         return this.isHandshakeSuccessful;
     }
 
-    public void closeConnectionGracefully () {
+    public void closeConnectionGracefully() {
         try {
             System.out.println("Closing connection...");
             String resp = this.sendMessage("QUIT");
@@ -117,7 +123,8 @@ public class ClientServerConnection {
                 oututStream.close();
                 clientSocket.close();
                 System.out.println("Connection closed");
-            } else {;
+            } else {
+                ;
                 throw new Exception("Server did not respond to QUIT command correctly");
             }
         } catch (IOException e) {

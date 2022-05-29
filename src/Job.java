@@ -36,11 +36,19 @@ public class Job {
         return this.disk;
     }
 
+    public double getEstimatedRunTime() {
+        return this.estimatedRunTime;
+    }
+
     public boolean isComplete() {
         return this.jobState.equals("completed");
     }
 
-    public String buildQueryForCapableServer(){
+    public boolean hasBeenReSubmitted() {
+        return this.jobState.equals("re-submission");
+    }
+
+    public String buildQueryForCapableServer() {
         String query = "GETS Capable " + getCoresRequired() + " " + getMemoryRequired() + " " + getDiskRequired();
         return query;
     }

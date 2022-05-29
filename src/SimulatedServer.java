@@ -18,8 +18,9 @@ public class SimulatedServer {
     SimulatedServer(String strigifiedServerInformation) {
         // break the string by the space between each attribute
         String[] serverInformation = strigifiedServerInformation.split(" ");
-        
-        // the location of each attribute is pre-determined. We can use this to correctly assign state variables.
+
+        // the location of each attribute is pre-determined. We can use this to
+        // correctly assign state variables.
         this.serverType = serverInformation[0];
         this.serverID = Integer.parseInt(serverInformation[1]);
         this.state = serverInformation[2];
@@ -43,6 +44,22 @@ public class SimulatedServer {
         return this.serverType.trim();
     }
 
+    public boolean isBooting() {
+        if (this.state.trim().equals("booting"))
+            return true;
+        return false;
+    }
+
+    public boolean isActive() {
+        if (this.state.trim().equals("active"))
+            return true;
+        return false;
+    }
+
+    public int getNumWaitingJobs() {
+        return this.numWaitingJobs;
+    }
+
     public void scheduleJob(int jobID) {
         try {
             String command = "SCHD " + jobID + " " + this.serverType + " " + this.serverID;
@@ -55,6 +72,7 @@ public class SimulatedServer {
         }
     }
 
+    // can potentially be removed
     public void queryJobList() {
         try {
             String command = "LSTJ " + this.serverType + " " + this.serverID;
@@ -65,13 +83,15 @@ public class SimulatedServer {
             int lengthPerRecord = Integer.parseInt(jobsIndicativeInformation[2]);
 
             // adding some buffer to record length
-            int adjustedRecordLength = lengthPerRecord + Integer.parseInt(configDataLoader.get("buffer_for_record_length"));
+            int adjustedRecordLength = lengthPerRecord
+                    + Integer.parseInt(configDataLoader.get("buffer_for_record_length"));
             byte[] buffer = new byte[numberOfJobs * adjustedRecordLength];
 
             String jobListString = clientServerConnection.sendMessage("OK", buffer);
             String[] jobs = jobListString.split("\n");
-            
-            for (String job: jobs) this.jobList.add(new Job(new JobInformationBuilder(job, true).build()));
+
+            for (String job : jobs)
+                this.jobList.add(new Job(new JobInformationBuilder(job, true).build()));
 
             String responseToOK = clientServerConnection.sendMessage("OK");
             if (!responseToOK.trim().equals(".")) {
@@ -82,16 +102,36 @@ public class SimulatedServer {
         }
     }
 
+    public int getEstimatedWaitTime() {
+        try {
+            String command = "EJWT " + this.serverType + " " + this.serverID;
+            String responseToQuery = clientServerConnection.sendMessage(command);
+            int estJobWaitTimeInQueue = Integer.parseInt(responseToQuery);
+            return estJobWaitTimeInQueue;
+        } catch (Exception e) {
+            System.out.println("Exception: " + e);
+            return 0;
+        }
+    }
+
+    // can potentially be removed
+    public boolean canHandleJobImmediately(Job job) {
+        boolean hasEnoughCores = this.core > job.getCoresRequired();
+        boolean hasEnoughMemory = this.memory > job.getMemoryRequired();
+        boolean hasEnoughDisk = this.disk > job.getDiskRequired();
+        return hasEnoughCores && hasEnoughMemory && hasEnoughDisk;
+    }
+
     public void displayJobList() {
         System.out.println("======= Displaying Job List ========");
-        for(Job job : this.jobList) {
+        for (Job job : this.jobList) {
             job.display();
         }
         System.out.println("======= Complete ========");
     }
 
     public void display() {
-        System.out.println("================");
+        System.out.println("==============");
         System.out.println("Server Type: " + serverType);
         System.out.println("Server ID: " + serverID);
         System.out.println("Server State: " + state);
@@ -101,6 +141,6 @@ public class SimulatedServer {
         System.out.println("Server Disk: " + disk);
         System.out.println("Number of waiting jobs: " + numWaitingJobs);
         System.out.println("Number of running jobs: " + numRunningJobs);
-        System.out.println("================");
+        System.out.println("==============");
     }
 }

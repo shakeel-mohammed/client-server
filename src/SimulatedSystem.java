@@ -1,13 +1,15 @@
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class SimulatedSystem {
     private ConfigDataLoader configDataLoader = ConfigDataLoader.getInstance();
     private ClientServerConnection clientServerConnection = ClientServerConnection.getInstance();
-    
+
     private ArrayList<SimulatedServer> serverStore = new ArrayList<SimulatedServer>();
     private String largestServerType;
 
-    public void queryDSSim(String query) {
+    public ArrayList<SimulatedServer> queryDSSim(String query) {
         String responseToQuery = clientServerConnection.sendMessage(query);
         System.out.println(responseToQuery);
 
@@ -21,22 +23,27 @@ public class SimulatedSystem {
 
         try {
             String responseToOK1 = clientServerConnection.sendMessage("OK", buffer);
-            this.refreshServerStore(responseToOK1);
-            
+
             String responseToOK2 = clientServerConnection.sendMessage("OK");
             if (!responseToOK2.trim().equals(".")) {
                 throw new Error("Unexpected ACK response from ds-sim server: " + responseToOK2);
             }
+
+            ArrayList<SimulatedServer> list = new ArrayList<SimulatedServer>();
+            String[] serversInformation = responseToOK1.split("\n");
+            for (String server : serversInformation)
+                list.add(new SimulatedServer(server));
+
+            return list;
         } catch (Exception exc) {
             System.out.println("exception: " + exc);
+            return null;
         }
     }
 
-    public void refreshServerStore(String strigifiedServers) {
-        this.serverStore = new ArrayList<SimulatedServer>();
-        String[] serversInformation = strigifiedServers.split("\n");
-        for (String server: serversInformation) this.serverStore.add(new SimulatedServer(server));
-
+    // Sets the internally stored serverStore to the list of servers passed in
+    public void setServerStore(ArrayList<SimulatedServer> servers) {
+        this.serverStore = servers;
         this.largestServerType = this.getLargestServer().getServerType();
     }
 
@@ -50,12 +57,64 @@ public class SimulatedSystem {
 
     public SimulatedServer getLargestServer() {
         SimulatedServer largest = this.serverStore.get(0);
-        for (SimulatedServer simulatedServer: this.serverStore) {
+        for (SimulatedServer simulatedServer : this.serverStore) {
             if (simulatedServer.getNumberOfCores() > largest.getNumberOfCores()) {
                 largest = simulatedServer;
             }
         }
         return largest;
+    }
+
+    public ArrayList<SimulatedServer> sortServersByLowestEstimatedJobWaitTime(ArrayList<SimulatedServer> inputList) {
+        Collections.sort(inputList, new Comparator<SimulatedServer>() {
+            @Override
+            public int compare(SimulatedServer lhs, SimulatedServer rhs) {
+                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+                return lhs.getEstimatedWaitTime() < rhs.getEstimatedWaitTime() ? -1
+                        : (lhs.getEstimatedWaitTime() > rhs.getEstimatedWaitTime()) ? 1 : 0;
+            }
+        });
+        return inputList;
+    }
+
+    public SimulatedServer findServerThatCanHandleJobImmediately(ArrayList<SimulatedServer> inputList, Job job) {
+        for (SimulatedServer simulatedServer : inputList) {
+            if (simulatedServer.getNumberOfCores() >= job.getCoresRequired()) {
+                return simulatedServer;
+            }
+        }
+        return null;
+    }
+
+    public SimulatedServer findServerActiveServerWithLowestEstimatedWaitTime(ArrayList<SimulatedServer> inputList) {
+        ArrayList<SimulatedServer> availableServers = new ArrayList<SimulatedServer>(0);
+        for (SimulatedServer simulatedServer : inputList) {
+            if (simulatedServer.isActive()) {
+                availableServers.add(simulatedServer);
+            }
+        }
+
+        Collections.sort(availableServers, new Comparator<SimulatedServer>() {
+            @Override
+            public int compare(SimulatedServer lhs, SimulatedServer rhs) {
+                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+                return lhs.getEstimatedWaitTime() < rhs.getEstimatedWaitTime() ? -1
+                        : (lhs.getEstimatedWaitTime() > rhs.getEstimatedWaitTime()) ? 1 : 0;
+            }
+        });
+        return availableServers.get(0);
+    }
+
+    public SimulatedServer findLeastCapableServer(ArrayList<SimulatedServer> inputList) {
+        Collections.sort(inputList, new Comparator<SimulatedServer>() {
+            @Override
+            public int compare(SimulatedServer lhs, SimulatedServer rhs) {
+                // -1 - less than, 1 - greater than, 0 - equal, all inversed for descending
+                return lhs.getNumberOfCores() < rhs.getNumberOfCores() ? -1
+                        : (lhs.getNumberOfCores() > rhs.getNumberOfCores()) ? 1 : 0;
+            }
+        });
+        return inputList.get(0);
     }
 
     public SimulatedServer findNextServerByType(String serverType, SimulatedServer current) {
@@ -67,17 +126,26 @@ public class SimulatedSystem {
     public ArrayList<SimulatedServer> findServersByType(String serverType) {
         ArrayList<SimulatedServer> list = new ArrayList<SimulatedServer>();
 
-        for (SimulatedServer simulatedServer: this.serverStore) {
-            if (simulatedServer.getServerType().equals(serverType)) list.add(simulatedServer);
+        for (SimulatedServer simulatedServer : this.serverStore) {
+            if (simulatedServer.getServerType().equals(serverType))
+                list.add(simulatedServer);
         }
         return list;
     }
 
     public SimulatedServer getNextServerById(ArrayList<SimulatedServer> list, SimulatedServer current) {
-        if (current == null) return list.get(0);
-        for (SimulatedServer simulatedServer: list) {
-            if (simulatedServer.getID() > current.getID()) return simulatedServer;
+        if (current == null)
+            return list.get(0);
+        for (SimulatedServer simulatedServer : list) {
+            if (simulatedServer.getID() > current.getID())
+                return simulatedServer;
         }
         return list.get(0);
+    }
+
+    public void printStore() {
+        for (SimulatedServer simulatedServer : this.serverStore) {
+            simulatedServer.display();
+        }
     }
 }
