@@ -18,8 +18,9 @@ public class SimulatedServer {
     SimulatedServer(String strigifiedServerInformation) {
         // break the string by the space between each attribute
         String[] serverInformation = strigifiedServerInformation.split(" ");
-        
-        // the location of each attribute is pre-determined. We can use this to correctly assign state variables.
+
+        // the location of each attribute is pre-determined. We can use this to
+        // correctly assign state variables.
         this.serverType = serverInformation[0];
         this.serverID = Integer.parseInt(serverInformation[1]);
         this.state = serverInformation[2];
@@ -44,12 +45,14 @@ public class SimulatedServer {
     }
 
     public boolean isBooting() {
-        if (this.state.trim().equals("booting")) return true;
+        if (this.state.trim().equals("booting"))
+            return true;
         return false;
     }
 
     public boolean isActive() {
-        if (this.state.trim().equals("active")) return true;
+        if (this.state.trim().equals("active"))
+            return true;
         return false;
     }
 
@@ -80,13 +83,15 @@ public class SimulatedServer {
             int lengthPerRecord = Integer.parseInt(jobsIndicativeInformation[2]);
 
             // adding some buffer to record length
-            int adjustedRecordLength = lengthPerRecord + Integer.parseInt(configDataLoader.get("buffer_for_record_length"));
+            int adjustedRecordLength = lengthPerRecord
+                    + Integer.parseInt(configDataLoader.get("buffer_for_record_length"));
             byte[] buffer = new byte[numberOfJobs * adjustedRecordLength];
 
             String jobListString = clientServerConnection.sendMessage("OK", buffer);
             String[] jobs = jobListString.split("\n");
-            
-            for (String job: jobs) this.jobList.add(new Job(new JobInformationBuilder(job, true).build()));
+
+            for (String job : jobs)
+                this.jobList.add(new Job(new JobInformationBuilder(job, true).build()));
 
             String responseToOK = clientServerConnection.sendMessage("OK");
             if (!responseToOK.trim().equals(".")) {
@@ -119,7 +124,7 @@ public class SimulatedServer {
 
     public void displayJobList() {
         System.out.println("======= Displaying Job List ========");
-        for(Job job : this.jobList) {
+        for (Job job : this.jobList) {
             job.display();
         }
         System.out.println("======= Complete ========");

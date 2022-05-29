@@ -48,7 +48,7 @@ public class Job {
         return this.jobState.equals("re-submission");
     }
 
-    public String buildQueryForCapableServer(){
+    public String buildQueryForCapableServer() {
         String query = "GETS Capable " + getCoresRequired() + " " + getMemoryRequired() + " " + getDiskRequired();
         return query;
     }

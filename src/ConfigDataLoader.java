@@ -10,7 +10,7 @@ public class ConfigDataLoader {
 
     ConfigDataLoader(File configFile) {
         try {
-            FileInputStream in = new FileInputStream(configFile); 
+            FileInputStream in = new FileInputStream(configFile);
             this.props.load(in);
         } catch (FileNotFoundException e) {
             System.out.println("Unable to find config file: " + e);
